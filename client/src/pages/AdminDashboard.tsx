@@ -15,6 +15,9 @@ import {
     Autocomplete
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import SaveIcon from '@mui/icons-material/Save';
+import CloseIcon from '@mui/icons-material/Close';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
@@ -44,6 +47,11 @@ export function AdminDashboard() {
         amazonUrl: '',
         category: 'Celulares',
         listName: 'Mejores Celulares 2024'
+    });
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [editFormData, setEditFormData] = useState({
+        category: '',
+        listName: ''
     });
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -170,8 +178,45 @@ export function AdminDashboard() {
         }
     };
 
+    const handleStartEdit = (product: Product) => {
+        setEditingId(product.id);
+        setEditFormData({
+            category: product.category,
+            listName: product.listName
+        });
+    };
+
+    const handleCancelEdit = () => {
+        setEditingId(null);
+    };
+
+    const handleUpdateProduct = async (id: string) => {
+        try {
+            const response = await fetch(`${API_URL}/products/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(editFormData)
+            });
+
+            if (response.ok) {
+                setMessage({ type: 'success', text: 'Producto actualizado exitosamente' });
+                setEditingId(null);
+                loadProducts();
+                loadNavigation();
+            } else {
+                const errorData = await response.json();
+                setMessage({ type: 'error', text: errorData.error || 'Error al actualizar el producto' });
+            }
+        } catch (error) {
+            setMessage({ type: 'error', text: 'Error de conexión' });
+        }
+    };
+
     const categories = Object.keys(navigation);
     const listsForSelectedCategory = formData.category ? (navigation[formData.category] || []) : [];
+    const editListsForSelectedCategory = editFormData.category ? (navigation[editFormData.category] || []) : [];
 
     return (
         <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -297,42 +342,113 @@ export function AdminDashboard() {
                         Productos Existentes ({products.length})
                     </Typography>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        {products.map((product) => (
-                            <Card key={product.id} sx={{ bgcolor: '#1e1e1e' }}>
-                                <CardContent>
-                                    <Typography variant="h6" sx={{ color: 'primary.main' }}>
-                                        {product.title}
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                        {product.description}
-                                    </Typography>
-                                    <Box sx={{ mt: 1, display: 'flex', gap: 2 }}>
-                                        <Typography variant="body2">
-                                            💰 ${product.price}
+                        {products.map((product) => {
+                            const isEditing = editingId === product.id;
+
+                            return (
+                                <Card key={product.id} sx={{ bgcolor: '#1e1e1e', border: isEditing ? '1px solid #b3e600' : 'none' }}>
+                                    <CardContent>
+                                        <Typography variant="h6" sx={{ color: 'primary.main', mb: isEditing ? 2 : 0 }}>
+                                            {product.title}
                                         </Typography>
-                                        <Typography variant="body2">
-                                            ⭐ {product.rating}
-                                        </Typography>
-                                        <Typography variant="body2">
-                                            📝 {product.reviewCount} reviews
-                                        </Typography>
-                                    </Box>
-                                    <Box sx={{ mt: 1, display: 'flex', gap: 1 }}>
-                                        <Typography variant="caption" sx={{ bgcolor: 'primary.main', color: 'black', px: 1, borderRadius: 1 }}>
-                                            {product.category}
-                                        </Typography>
-                                        <Typography variant="caption" sx={{ bgcolor: 'grey.800', color: 'white', px: 1, borderRadius: 1 }}>
-                                            {product.listName}
-                                        </Typography>
-                                    </Box>
-                                </CardContent>
-                                <CardActions>
-                                    <IconButton size="small" color="error" onClick={() => handleDelete(product.id)}>
-                                        <DeleteIcon />
-                                    </IconButton>
-                                </CardActions>
-                            </Card>
-                        ))}
+
+                                        {!isEditing ? (
+                                            <>
+                                                <Typography variant="body2" color="text.secondary">
+                                                    {product.description}
+                                                </Typography>
+                                                <Box sx={{ mt: 1, display: 'flex', gap: 2 }}>
+                                                    <Typography variant="body2">
+                                                        💰 ${product.price}
+                                                    </Typography>
+                                                    <Typography variant="body2">
+                                                        ⭐ {product.rating}
+                                                    </Typography>
+                                                    <Typography variant="body2">
+                                                        📝 {product.reviewCount} reviews
+                                                    </Typography>
+                                                </Box>
+                                                <Box sx={{ mt: 1, display: 'flex', gap: 1 }}>
+                                                    <Typography variant="caption" sx={{ bgcolor: 'primary.main', color: 'black', px: 1, borderRadius: 1 }}>
+                                                        {product.category}
+                                                    </Typography>
+                                                    <Typography variant="caption" sx={{ bgcolor: 'grey.800', color: 'white', px: 1, borderRadius: 1 }}>
+                                                        {product.listName}
+                                                    </Typography>
+                                                </Box>
+                                            </>
+                                        ) : (
+                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+                                                <Autocomplete
+                                                    freeSolo
+                                                    size="small"
+                                                    options={categories}
+                                                    value={editFormData.category}
+                                                    onChange={(_, newValue) => {
+                                                        setEditFormData({ ...editFormData, category: newValue || '' });
+                                                    }}
+                                                    onInputChange={(_, newInputValue) => {
+                                                        setEditFormData({ ...editFormData, category: newInputValue });
+                                                    }}
+                                                    renderInput={(params) => (
+                                                        <TextField {...params} label="Categoría" />
+                                                    )}
+                                                />
+                                                <Autocomplete
+                                                    freeSolo
+                                                    size="small"
+                                                    options={editListsForSelectedCategory}
+                                                    value={editFormData.listName}
+                                                    onChange={(_, newValue) => {
+                                                        setEditFormData({ ...editFormData, listName: newValue || '' });
+                                                    }}
+                                                    onInputChange={(_, newInputValue) => {
+                                                        setEditFormData({ ...editFormData, listName: newInputValue });
+                                                    }}
+                                                    renderInput={(params) => (
+                                                        <TextField {...params} label="Nombre del Listado" />
+                                                    )}
+                                                />
+                                            </Box>
+                                        )}
+                                    </CardContent>
+                                    <CardActions sx={{ justifyContent: 'flex-end', gap: 1 }}>
+                                        {!isEditing ? (
+                                            <>
+                                                <IconButton size="small" color="primary" onClick={() => handleStartEdit(product)}>
+                                                    <EditIcon fontSize="small" />
+                                                </IconButton>
+                                                <IconButton size="small" color="error" onClick={() => handleDelete(product.id)}>
+                                                    <DeleteIcon fontSize="small" />
+                                                </IconButton>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Button
+                                                    size="small"
+                                                    variant="contained"
+                                                    color="primary"
+                                                    startIcon={<SaveIcon />}
+                                                    onClick={() => handleUpdateProduct(product.id)}
+                                                    sx={{ color: 'black', fontWeight: 'bold' }}
+                                                >
+                                                    Guardar
+                                                </Button>
+                                                <Button
+                                                    size="small"
+                                                    variant="outlined"
+                                                    color="inherit"
+                                                    startIcon={<CloseIcon />}
+                                                    onClick={handleCancelEdit}
+                                                >
+                                                    Cancelar
+                                                </Button>
+                                            </>
+                                        )}
+                                    </CardActions>
+                                </Card>
+                            );
+                        })}
                     </Box>
                 </Grid>
             </Grid>
