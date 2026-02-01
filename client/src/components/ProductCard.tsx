@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardMedia, Typography, Box, Rating, Button } from '@mui/material';
 import StarIcon from '@mui/icons-material/Star';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
@@ -10,6 +10,9 @@ interface ProductCardProps {
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, rank }) => {
+    const [expanded, setExpanded] = useState(false);
+    const isLongDescription = product.description.length > 150;
+
     return (
         <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'visible' }}>
             {/* Rank Badge */}
@@ -67,9 +70,39 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, rank }) => {
                     </Typography>
                 </Box>
 
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                    {product.description}
-                </Typography>
+                <Box sx={{ position: 'relative' }}>
+                    <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                            mb: 1,
+                            display: expanded ? 'block' : '-webkit-box',
+                            WebkitLineClamp: expanded ? 'unset' : 3,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                            transition: 'all 0.3s ease'
+                        }}
+                    >
+                        {product.description}
+                    </Typography>
+                    {isLongDescription && (
+                        <Button
+                            size="small"
+                            onClick={() => setExpanded(!expanded)}
+                            sx={{
+                                p: 0,
+                                minWidth: 0,
+                                textTransform: 'none',
+                                fontWeight: 'bold',
+                                color: 'primary.main',
+                                mb: 2,
+                                '&:hover': { bgcolor: 'transparent', textDecoration: 'underline' }
+                            }}
+                        >
+                            {expanded ? 'See Less' : 'See More...'}
+                        </Button>
+                    )}
+                </Box>
 
                 <Box sx={{ mt: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Typography variant="h5" color="primary.main" fontWeight="bold">
