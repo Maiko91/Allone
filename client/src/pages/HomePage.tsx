@@ -17,6 +17,67 @@ export function HomePage() {
         loadProducts(searchQuery, activeCategory, activeList);
     }, [activeCategory, activeList]);
 
+    // SEO: Actualizar Título y Meta Descripción dinámicamente
+    useEffect(() => {
+        const title = activeList || activeCategory || 'Todos los Productos';
+        document.title = `${title} | AllOne - Ranking Top 10`;
+
+        const metaDesc = document.querySelector('meta[name="description"]');
+        if (metaDesc) {
+            metaDesc.setAttribute('content', `Descubre el Top 10 de ${title}. Análisis profundos, valoraciones reales y los mejores precios actualizados.`);
+        }
+    }, [activeCategory, activeList]);
+
+    // SEO: Inyectar JSON-LD para resultados enriquecidos de Google
+    useEffect(() => {
+        if (!products.length) return;
+
+        const scriptId = 'json-ld-products';
+        let script = document.getElementById(scriptId) as HTMLScriptElement;
+
+        if (!script) {
+            script = document.createElement('script');
+            script.id = scriptId;
+            script.type = 'application/ld+json';
+            document.head.appendChild(script);
+        }
+
+        const jsonLd = {
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            "name": activeList || activeCategory || "Top Productos",
+            "itemListElement": products.slice(0, 10).map((product, index) => ({
+                "@type": "ListItem",
+                "position": index + 1,
+                "item": {
+                    "@type": "Product",
+                    "name": product.title,
+                    "description": product.description,
+                    "image": product.imageUrl,
+                    "url": window.location.href,
+                    "offers": {
+                        "@type": "Offer",
+                        "price": product.price,
+                        "priceCurrency": "USD",
+                        "availability": "https://schema.org/InStock"
+                    },
+                    "aggregateRating": {
+                        "@type": "AggregateRating",
+                        "ratingValue": product.rating,
+                        "reviewCount": product.reviewCount
+                    }
+                }
+            }))
+        };
+
+        script.text = JSON.stringify(jsonLd);
+
+        return () => {
+            const existingScript = document.getElementById(scriptId);
+            if (existingScript) existingScript.remove();
+        };
+    }, [products, activeCategory, activeList]);
+
     const loadProducts = async (query: string, category: string | null = null, list: string | null = null) => {
         setLoading(true);
         setSearchQuery(query);
@@ -47,12 +108,12 @@ export function HomePage() {
                     {/* Content */}
                     <Grid size={{ xs: 12, md: 9, lg: 9.5 }}>
                         <Box sx={{ mb: 4 }}>
-                            <Typography variant="h4" sx={{ fontWeight: 700, color: 'white' }}>
+                            <Typography variant="h1" sx={{ fontSize: '2.5rem', fontWeight: 700, color: 'white', mb: 1 }}>
                                 {activeList || activeCategory || 'Todos los Productos'}
                             </Typography>
                             {(activeCategory || activeList) && (
                                 <Typography variant="body1" color="text.secondary">
-                                    Mostrando lo mejor de {activeList || activeCategory}
+                                    Explora nuestra selección experta de los mejores {activeList || activeCategory} de 2024.
                                 </Typography>
                             )}
                         </Box>
