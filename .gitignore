@@ -1,0 +1,6 @@
+node_modules
+.DS_Store
+.env
+# Ignorar carpetas de VSCode o similares si aparecen en la raíz
+.vscode
+.idea
