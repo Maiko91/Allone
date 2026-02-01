@@ -11,7 +11,8 @@ import {
     CardContent,
     CardActions,
     IconButton,
-    Alert
+    Alert,
+    Autocomplete
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 
@@ -32,6 +33,7 @@ interface Product {
 
 export function AdminDashboard() {
     const [products, setProducts] = useState<Product[]>([]);
+    const [navigation, setNavigation] = useState<Record<string, string[]>>({});
     const [formData, setFormData] = useState({
         title: '',
         description: '',
@@ -47,6 +49,7 @@ export function AdminDashboard() {
 
     useEffect(() => {
         loadProducts();
+        loadNavigation();
     }, []);
 
     const loadProducts = async () => {
@@ -56,6 +59,16 @@ export function AdminDashboard() {
             setProducts(data);
         } catch (error) {
             console.error('Error loading products:', error);
+        }
+    };
+
+    const loadNavigation = async () => {
+        try {
+            const response = await fetch(`${API_URL}/navigation`);
+            const data = await response.json();
+            setNavigation(data);
+        } catch (error) {
+            console.error('Error loading navigation:', error);
         }
     };
 
@@ -125,9 +138,9 @@ export function AdminDashboard() {
                     reviewCount: '',
                     imageUrl: '',
                     amazonUrl: '',
-                    // Mantenemos category y listName para facilitar carga masiva
                 });
                 loadProducts();
+                loadNavigation();
             } else {
                 const errorData = await response.json();
                 setMessage({ type: 'error', text: errorData.error || 'Error al crear el producto' });
@@ -148,6 +161,7 @@ export function AdminDashboard() {
             if (response.ok) {
                 setMessage({ type: 'success', text: 'Producto eliminado' });
                 loadProducts();
+                loadNavigation();
             } else {
                 setMessage({ type: 'error', text: 'Error al eliminar' });
             }
@@ -155,6 +169,9 @@ export function AdminDashboard() {
             setMessage({ type: 'error', text: 'Error de conexión' });
         }
     };
+
+    const categories = Object.keys(navigation);
+    const listsForSelectedCategory = formData.category ? (navigation[formData.category] || []) : [];
 
     return (
         <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -234,22 +251,39 @@ export function AdminDashboard() {
                                 value={formData.imageUrl}
                                 onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
                             />
-                            <Box sx={{ display: 'flex', gap: 2 }}>
-                                <TextField
-                                    fullWidth
-                                    label="Categoría"
-                                    required
+
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                <Autocomplete
+                                    freeSolo
+                                    options={categories}
                                     value={formData.category}
-                                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                    onChange={(_, newValue) => {
+                                        setFormData({ ...formData, category: newValue || '' });
+                                    }}
+                                    onInputChange={(_, newInputValue) => {
+                                        setFormData({ ...formData, category: newInputValue });
+                                    }}
+                                    renderInput={(params) => (
+                                        <TextField {...params} label="Categoría" required />
+                                    )}
                                 />
-                                <TextField
-                                    fullWidth
-                                    label="Nombre del Listado"
-                                    required
+
+                                <Autocomplete
+                                    freeSolo
+                                    options={listsForSelectedCategory}
                                     value={formData.listName}
-                                    onChange={(e) => setFormData({ ...formData, listName: e.target.value })}
+                                    onChange={(_, newValue) => {
+                                        setFormData({ ...formData, listName: newValue || '' });
+                                    }}
+                                    onInputChange={(_, newInputValue) => {
+                                        setFormData({ ...formData, listName: newInputValue });
+                                    }}
+                                    renderInput={(params) => (
+                                        <TextField {...params} label="Nombre del Listado" required />
+                                    )}
                                 />
                             </Box>
+
                             <Button type="submit" variant="contained" size="large">
                                 Guardar Producto
                             </Button>
