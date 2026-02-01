@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid, Box, Typography, Container } from '@mui/material'; // Grid is now Grid2 in v6 but commonly Grid in v5. Using Grid for compat.
+import { Grid, Typography, Container } from '@mui/material';
 import { ProductCard } from './ProductCard';
 import type { Product } from '../types';
 
@@ -36,7 +36,7 @@ export const ProductList: React.FC<ProductListProps> = ({ products, loading }) =
         <Container maxWidth="lg" sx={{ py: 8 }}>
             <Grid container spacing={4}>
                 {products.map((product, index) => (
-                    <Grid item key={product.id} xs={12} sm={6} md={4}>
+                    <Grid key={product.id} size={{ xs: 12, sm: 6, md: 4 }}>
                         <ProductCard product={product} rank={index + 1} />
                     </Grid>
                 ))}

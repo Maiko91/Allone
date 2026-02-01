@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardContent, CardMedia, Typography, Box, Rating, Button, Chip, Stack } from '@mui/material';
+import { Card, CardContent, CardMedia, Typography, Box, Rating, Button } from '@mui/material';
 import StarIcon from '@mui/icons-material/Star';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import type { Product } from '../types';
