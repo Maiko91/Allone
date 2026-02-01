@@ -6,4 +6,5 @@ export interface Product {
     rating: number;
     reviewCount: number;
     imageUrl: string;
+    amazonUrl?: string | null;
 }

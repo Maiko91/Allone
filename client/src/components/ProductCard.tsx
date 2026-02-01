@@ -78,6 +78,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, rank }) => {
                     <Button
                         variant="contained"
                         color="primary"
+                        component="a"
+                        href={product.amazonUrl || '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         endIcon={<ShoppingCartIcon />}
                         sx={{
                             color: 'black',

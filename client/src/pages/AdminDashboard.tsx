@@ -78,7 +78,10 @@ export function AdminDashboard() {
                 setFormData({
                     ...formData,
                     title: data.title || '',
+                    description: data.description || '',
                     price: data.price ? data.price.toString() : '',
+                    rating: data.rating ? data.rating.toString() : '',
+                    reviewCount: data.reviewCount ? data.reviewCount.toString() : '',
                     imageUrl: data.imageUrl || '',
                 });
                 setMessage({ type: 'success', text: 'Datos extraídos correctamente. Puedes revisarlos antes de guardar.' });
