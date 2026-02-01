@@ -16,6 +16,8 @@ model Product {
   reviewCount Int
   imageUrl    String
   amazonUrl   String?
+  category    String   @default("General")
+  listName    String   @default("Top 10")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }

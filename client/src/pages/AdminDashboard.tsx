@@ -26,6 +26,8 @@ interface Product {
     reviewCount: number;
     imageUrl: string;
     amazonUrl?: string | null;
+    category: string;
+    listName: string;
 }
 
 export function AdminDashboard() {
@@ -37,7 +39,9 @@ export function AdminDashboard() {
         rating: '',
         reviewCount: '',
         imageUrl: '',
-        amazonUrl: ''
+        amazonUrl: '',
+        category: 'Celulares',
+        listName: 'Mejores Celulares 2024'
     });
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -113,13 +117,15 @@ export function AdminDashboard() {
             if (response.ok) {
                 setMessage({ type: 'success', text: 'Producto creado exitosamente' });
                 setFormData({
+                    ...formData,
                     title: '',
                     description: '',
                     price: '',
                     rating: '',
                     reviewCount: '',
                     imageUrl: '',
-                    amazonUrl: ''
+                    amazonUrl: '',
+                    // Mantenemos category y listName para facilitar carga masiva
                 });
                 loadProducts();
             } else {
@@ -164,7 +170,7 @@ export function AdminDashboard() {
 
             <Grid container spacing={4}>
                 {/* Formulario */}
-                <Grid sx={{ width: { xs: '100%', md: '41.666667%' } }}>
+                <Grid size={{ xs: 12, md: 5 }}>
                     <Paper sx={{ p: 3, bgcolor: '#1e1e1e' }}>
                         <Typography variant="h5" gutterBottom sx={{ color: 'primary.main' }}>
                             Importación Inteligente
@@ -228,6 +234,22 @@ export function AdminDashboard() {
                                 value={formData.imageUrl}
                                 onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
                             />
+                            <Box sx={{ display: 'flex', gap: 2 }}>
+                                <TextField
+                                    fullWidth
+                                    label="Categoría"
+                                    required
+                                    value={formData.category}
+                                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                />
+                                <TextField
+                                    fullWidth
+                                    label="Nombre del Listado"
+                                    required
+                                    value={formData.listName}
+                                    onChange={(e) => setFormData({ ...formData, listName: e.target.value })}
+                                />
+                            </Box>
                             <Button type="submit" variant="contained" size="large">
                                 Guardar Producto
                             </Button>
@@ -236,7 +258,7 @@ export function AdminDashboard() {
                 </Grid>
 
                 {/* Lista de productos */}
-                <Grid sx={{ width: { xs: '100%', md: '58.333333%' } }}>
+                <Grid size={{ xs: 12, md: 7 }}>
                     <Typography variant="h5" gutterBottom sx={{ color: 'primary.main' }}>
                         Productos Existentes ({products.length})
                     </Typography>
@@ -259,6 +281,14 @@ export function AdminDashboard() {
                                         </Typography>
                                         <Typography variant="body2">
                                             📝 {product.reviewCount} reviews
+                                        </Typography>
+                                    </Box>
+                                    <Box sx={{ mt: 1, display: 'flex', gap: 1 }}>
+                                        <Typography variant="caption" sx={{ bgcolor: 'primary.main', color: 'black', px: 1, borderRadius: 1 }}>
+                                            {product.category}
+                                        </Typography>
+                                        <Typography variant="caption" sx={{ bgcolor: 'grey.800', color: 'white', px: 1, borderRadius: 1 }}>
+                                            {product.listName}
                                         </Typography>
                                     </Box>
                                 </CardContent>

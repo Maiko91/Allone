@@ -1,0 +1,120 @@
+import {
+    Box,
+    List,
+    ListItemText,
+    Collapse,
+    ListItemButton,
+    ListSubheader,
+    Paper
+} from '@mui/material';
+import { ExpandLess, ExpandMore } from '@mui/icons-material';
+import { useState, useEffect } from 'react';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+
+interface SidebarProps {
+    onSelect: (category: string | null, listName: string | null) => void;
+    activeCategory: string | null;
+    activeList: string | null;
+}
+
+export const Sidebar = ({ onSelect, activeCategory, activeList }: SidebarProps) => {
+    const [navigation, setNavigation] = useState<Record<string, string[]>>({});
+    const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({});
+
+    useEffect(() => {
+        const fetchNavigation = async () => {
+            try {
+                const response = await fetch(`${API_URL}/navigation`);
+                const data = await response.json();
+                setNavigation(data);
+
+                // Abrir todas las categorías por defecto
+                const initialOpen: Record<string, boolean> = {};
+                Object.keys(data).forEach(cat => initialOpen[cat] = true);
+                setOpenCategories(initialOpen);
+            } catch (error) {
+                console.error('Error fetching navigation:', error);
+            }
+        };
+
+        fetchNavigation();
+    }, []);
+
+    const toggleCategory = (category: string) => {
+        setOpenCategories(prev => ({
+            ...prev,
+            [category]: !prev[category]
+        }));
+    };
+
+    return (
+        <Paper
+            elevation={0}
+            sx={{
+                width: 280,
+                bgcolor: '#1e1e1e',
+                borderRadius: 2,
+                overflow: 'hidden',
+                border: '1px solid rgba(255,255,255,0.1)',
+                height: 'fit-content',
+                position: 'sticky',
+                top: 100
+            }}
+        >
+            <List
+                subheader={
+                    <ListSubheader sx={{ bgcolor: 'transparent', color: 'primary.main', fontWeight: 'bold' }}>
+                        CATEGORÍAS
+                    </ListSubheader>
+                }
+            >
+                <ListItemButton
+                    onClick={() => onSelect(null, null)}
+                    selected={activeCategory === null}
+                    sx={{
+                        '&.Mui-selected': { bgcolor: 'rgba(179, 230, 0, 0.1)' }
+                    }}
+                >
+                    <ListItemText primary="Ver Todos" />
+                </ListItemButton>
+
+                {Object.entries(navigation).map(([category, lists]) => (
+                    <Box key={category}>
+                        <ListItemButton onClick={() => toggleCategory(category)}>
+                            <ListItemText
+                                primary={category}
+                                primaryTypographyProps={{ fontWeight: activeCategory === category ? 'bold' : 'normal' }}
+                            />
+                            {openCategories[category] ? <ExpandLess /> : <ExpandMore />}
+                        </ListItemButton>
+
+                        <Collapse in={openCategories[category]} timeout="auto" unmountOnExit>
+                            <List component="div" disablePadding>
+                                {lists.map((listName) => (
+                                    <ListItemButton
+                                        key={listName}
+                                        sx={{
+                                            pl: 4,
+                                            '&.Mui-selected': { bgcolor: 'rgba(179, 230, 0, 0.2)' }
+                                        }}
+                                        selected={activeList === listName}
+                                        onClick={() => onSelect(category, listName)}
+                                    >
+                                        <ListItemText
+                                            secondary={listName}
+                                            secondaryTypographyProps={{
+                                                color: activeList === listName ? 'primary.main' : 'text.secondary',
+                                                fontSize: '0.875rem'
+                                            }}
+                                        />
+                                    </ListItemButton>
+                                ))}
+                            </List>
+                        </Collapse>
+                    </Box>
+                ))}
+            </List>
+        </Paper>
+    );
+};

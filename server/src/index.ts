@@ -23,12 +23,18 @@ app.get('/api/health', async (req: Request, res: Response) => {
     }
 });
 
-// GET all products
+// GET all products (with filters)
 app.get('/api/products', async (req: Request, res: Response) => {
     try {
+        const { category, listName } = req.query;
+
         const products = await prisma.product.findMany({
+            where: {
+                ...(category && { category: category as string }),
+                ...(listName && { listName: listName as string }),
+            },
             orderBy: { rating: 'desc' },
-            take: 10
+            take: 100 // Aumentamos el límite para dar soporte a categorías
         });
         res.json(products);
     } catch (error) {
@@ -37,25 +43,32 @@ app.get('/api/products', async (req: Request, res: Response) => {
     }
 });
 
-// GET single product by ID
-app.get('/api/products/:id', async (req: Request, res: Response) => {
+// GET Categories and Lists for Sidebar
+app.get('/api/navigation', async (req: Request, res: Response) => {
     try {
-        const id = req.params.id as string;
-        const product = await prisma.product.findUnique({
-            where: { id }
+        const products = await prisma.product.findMany({
+            select: {
+                category: true,
+                listName: true
+            }
         });
 
-        if (!product) {
-            return res.status(404).json({ error: 'Product not found' });
-        }
+        const navigation: Record<string, string[]> = {};
 
-        res.json(product);
+        products.forEach(p => {
+            if (!navigation[p.category]) {
+                navigation[p.category] = [];
+            }
+            if (!navigation[p.category].includes(p.listName)) {
+                navigation[p.category].push(p.listName);
+            }
+        });
+
+        res.json(navigation);
     } catch (error) {
-        console.error('Error fetching product:', error);
-        res.status(500).json({ error: 'Failed to fetch product' });
+        res.status(500).json({ error: 'Failed to fetch navigation' });
     }
 });
-
 // POST Scrape Amazon URL
 app.post('/api/scrape', async (req: Request, res: Response) => {
     try {
@@ -74,7 +87,7 @@ app.post('/api/scrape', async (req: Request, res: Response) => {
 // POST create new product
 app.post('/api/products', async (req: Request, res: Response) => {
     try {
-        const { title, description, price, rating, reviewCount, imageUrl, amazonUrl } = req.body;
+        const { title, description, price, rating, reviewCount, imageUrl, amazonUrl, category, listName } = req.body;
 
         // Validación básica
         if (!title || !price) {
@@ -89,7 +102,9 @@ app.post('/api/products', async (req: Request, res: Response) => {
                 rating: parseFloat(rating) || 0,
                 reviewCount: parseInt(reviewCount) || 0,
                 imageUrl: imageUrl || 'https://placehold.co/600x400?text=Product',
-                amazonUrl: amazonUrl || null
+                amazonUrl: amazonUrl || null,
+                category: category || 'General',
+                listName: listName || 'Top 10'
             }
         });
 
@@ -104,7 +119,7 @@ app.post('/api/products', async (req: Request, res: Response) => {
 app.put('/api/products/:id', async (req: Request, res: Response) => {
     try {
         const id = req.params.id as string;
-        const { title, description, price, rating, reviewCount, imageUrl, amazonUrl } = req.body;
+        const { title, description, price, rating, reviewCount, imageUrl, amazonUrl, category, listName } = req.body;
 
         const updatedProduct = await prisma.product.update({
             where: { id },
@@ -115,7 +130,9 @@ app.put('/api/products/:id', async (req: Request, res: Response) => {
                 ...(rating && { rating: parseFloat(rating) }),
                 ...(reviewCount && { reviewCount: parseInt(reviewCount) }),
                 ...(imageUrl && { imageUrl }),
-                ...(amazonUrl !== undefined && { amazonUrl })
+                ...(amazonUrl !== undefined && { amazonUrl }),
+                ...(category && { category }),
+                ...(listName && { listName })
             }
         });
 
