@@ -8,7 +8,7 @@ datasource db {
 }
 
 model Product {
-  id          String   @id @default(uuid())
+  id          String     @id @default(uuid())
   title       String
   description String
   price       Float
@@ -16,8 +16,29 @@ model Product {
   reviewCount Int
   imageUrl    String
   amazonUrl   String?
-  category    String   @default("General")
-  listName    String   @default("Top 10")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  categories  Category[] @relation("CategoryToProduct")
+  lists       List[]     @relation("ListToProduct")
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Category {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  products  Product[] @relation("CategoryToProduct")
+  lists     List[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model List {
+  id         String    @id @default(uuid())
+  name       String
+  categoryId String
+  category   Category  @relation(fields: [categoryId], references: [id])
+  products   Product[] @relation("ListToProduct")
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@unique([name, categoryId])
 }

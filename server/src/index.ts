@@ -30,11 +30,25 @@ app.get('/api/products', async (req: Request, res: Response) => {
 
         const products = await prisma.product.findMany({
             where: {
-                ...(category && { category: category as string }),
-                ...(listName && { listName: listName as string }),
+                AND: [
+                    category ? {
+                        categories: {
+                            some: { name: category as string }
+                        }
+                    } : {},
+                    listName ? {
+                        lists: {
+                            some: { name: listName as string }
+                        }
+                    } : {}
+                ]
+            },
+            include: {
+                categories: true,
+                lists: true
             },
             orderBy: { rating: 'desc' },
-            take: 100 // Aumentamos el límite para dar soporte a categorías
+            take: 100
         });
         res.json(products);
     } catch (error) {
@@ -46,22 +60,16 @@ app.get('/api/products', async (req: Request, res: Response) => {
 // GET Categories and Lists for Sidebar
 app.get('/api/navigation', async (req: Request, res: Response) => {
     try {
-        const products = await prisma.product.findMany({
-            select: {
-                category: true,
-                listName: true
+        const categories = await prisma.category.findMany({
+            include: {
+                lists: true
             }
         });
 
         const navigation: Record<string, string[]> = {};
 
-        products.forEach(p => {
-            if (!navigation[p.category]) {
-                navigation[p.category] = [];
-            }
-            if (!navigation[p.category].includes(p.listName)) {
-                navigation[p.category].push(p.listName);
-            }
+        categories.forEach(cat => {
+            navigation[cat.name] = cat.lists.map(l => l.name);
         });
 
         res.json(navigation);
@@ -87,13 +95,20 @@ app.post('/api/scrape', async (req: Request, res: Response) => {
 // POST create new product
 app.post('/api/products', async (req: Request, res: Response) => {
     try {
-        const { title, description, price, rating, reviewCount, imageUrl, amazonUrl, category, listName } = req.body;
+        const { title, description, price, rating, reviewCount, imageUrl, amazonUrl, category: categoryName, listName } = req.body;
 
-        // Validación básica
         if (!title || !price) {
             return res.status(400).json({ error: 'Title and price are required' });
         }
 
+        // 1. Asegurar que la categoría existe
+        const category = await prisma.category.upsert({
+            where: { name: categoryName || 'General' },
+            update: {},
+            create: { name: categoryName || 'General' }
+        });
+
+        // 2. Crear el producto con las relaciones
         const newProduct = await prisma.product.create({
             data: {
                 title,
@@ -103,8 +118,27 @@ app.post('/api/products', async (req: Request, res: Response) => {
                 reviewCount: parseInt(reviewCount) || 0,
                 imageUrl: imageUrl || 'https://placehold.co/600x400?text=Product',
                 amazonUrl: amazonUrl || null,
-                category: category || 'General',
-                listName: listName || 'Top 10'
+                categories: {
+                    connect: { id: category.id }
+                },
+                lists: {
+                    connectOrCreate: {
+                        where: {
+                            name_categoryId: {
+                                name: listName || 'Top 10',
+                                categoryId: category.id
+                            }
+                        },
+                        create: {
+                            name: listName || 'Top 10',
+                            categoryId: category.id
+                        }
+                    }
+                }
+            },
+            include: {
+                categories: true,
+                lists: true
             }
         });
 
@@ -119,20 +153,55 @@ app.post('/api/products', async (req: Request, res: Response) => {
 app.put('/api/products/:id', async (req: Request, res: Response) => {
     try {
         const id = req.params.id as string;
-        const { title, description, price, rating, reviewCount, imageUrl, amazonUrl, category, listName } = req.body;
+        const { title, description, price, rating, reviewCount, imageUrl, amazonUrl, category: categoryName, listName } = req.body;
+
+        const data: any = {
+            ...(title && { title }),
+            ...(description && { description }),
+            ...(price && { price: parseFloat(price) }),
+            ...(rating && { rating: parseFloat(rating) }),
+            ...(reviewCount && { reviewCount: parseInt(reviewCount) }),
+            ...(imageUrl && { imageUrl }),
+            ...(amazonUrl !== undefined && { amazonUrl })
+        };
+
+        // Si se actualiza categoría o lista, manejamos la relación
+        if (categoryName) {
+            const category = await prisma.category.upsert({
+                where: { name: categoryName },
+                update: {},
+                create: { name: categoryName }
+            });
+
+            data.categories = {
+                set: [{ id: category.id }]
+            };
+
+            if (listName) {
+                data.lists = {
+                    set: [], // Limpiamos listas anteriores si se especifica una nueva bajo una categoría
+                    connectOrCreate: {
+                        where: {
+                            name_categoryId: {
+                                name: listName,
+                                categoryId: category.id
+                            }
+                        },
+                        create: {
+                            name: listName,
+                            categoryId: category.id
+                        }
+                    }
+                };
+            }
+        }
 
         const updatedProduct = await prisma.product.update({
             where: { id },
-            data: {
-                ...(title && { title }),
-                ...(description && { description }),
-                ...(price && { price: parseFloat(price) }),
-                ...(rating && { rating: parseFloat(rating) }),
-                ...(reviewCount && { reviewCount: parseInt(reviewCount) }),
-                ...(imageUrl && { imageUrl }),
-                ...(amazonUrl !== undefined && { amazonUrl }),
-                ...(category && { category }),
-                ...(listName && { listName })
+            data,
+            include: {
+                categories: true,
+                lists: true
             }
         });
 

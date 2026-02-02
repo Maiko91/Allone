@@ -21,18 +21,7 @@ import CloseIcon from '@mui/icons-material/Close';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
-interface Product {
-    id: string;
-    title: string;
-    description: string;
-    price: number;
-    rating: number;
-    reviewCount: number;
-    imageUrl: string;
-    amazonUrl?: string | null;
-    category: string;
-    listName: string;
-}
+import type { Product } from '../types';
 
 export function AdminDashboard() {
     const [products, setProducts] = useState<Product[]>([]);
@@ -181,8 +170,8 @@ export function AdminDashboard() {
     const handleStartEdit = (product: Product) => {
         setEditingId(product.id);
         setEditFormData({
-            category: product.category,
-            listName: product.listName
+            category: product.categories[0]?.name || '',
+            listName: product.lists[0]?.name || ''
         });
     };
 
@@ -368,13 +357,17 @@ export function AdminDashboard() {
                                                         📝 {product.reviewCount} reviews
                                                     </Typography>
                                                 </Box>
-                                                <Box sx={{ mt: 1, display: 'flex', gap: 1 }}>
-                                                    <Typography variant="caption" sx={{ bgcolor: 'primary.main', color: 'black', px: 1, borderRadius: 1 }}>
-                                                        {product.category}
-                                                    </Typography>
-                                                    <Typography variant="caption" sx={{ bgcolor: 'grey.800', color: 'white', px: 1, borderRadius: 1 }}>
-                                                        {product.listName}
-                                                    </Typography>
+                                                <Box sx={{ mt: 1, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                                                    {product.categories.map(cat => (
+                                                        <Typography key={cat.id} variant="caption" sx={{ bgcolor: 'primary.main', color: 'black', px: 1, borderRadius: 1 }}>
+                                                            {cat.name}
+                                                        </Typography>
+                                                    ))}
+                                                    {product.lists.map(list => (
+                                                        <Typography key={list.id} variant="caption" sx={{ bgcolor: 'grey.800', color: 'white', px: 1, borderRadius: 1 }}>
+                                                            {list.name}
+                                                        </Typography>
+                                                    ))}
                                                 </Box>
                                             </>
                                         ) : (
