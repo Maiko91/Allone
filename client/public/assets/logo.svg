@@ -13,11 +13,8 @@
     </filter>
   </defs>
   
-  <!-- Complete text: all10ne -->
+  <!-- Text: all10ne -->
   <text x="10" y="55" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="url(#logoGradient)" filter="url(#glow)">
-    all10ne
+    <tspan>all</tspan><tspan font-size="48">⓵</tspan><tspan>ne</tspan>
   </text>
-  
-  <!-- Subtle horizontal bar connecting the two "l"s to suggest "T" -->
-  <rect x="50" y="10" width="30" height="4" fill="url(#logoGradient)" filter="url(#glow)" rx="2" opacity="0.9"/>
 </svg>
