@@ -13,10 +13,9 @@
     </filter>
   </defs>
   
-  <!-- Outer circles for "a" -->
-  <circle cx="256" cy="256" r="200" stroke="url(#iconGradient)" stroke-width="40" fill="none" filter="url(#iconGlow)" opacity="0.6"/>
-  <circle cx="256" cy="256" r="140" stroke="url(#iconGradient)" stroke-width="30" fill="none" filter="url(#iconGlow)" opacity="0.8"/>
+  <!-- Outer circle for "a" -->
+  <circle cx="256" cy="256" r="200" stroke="url(#iconGradient)" stroke-width="40" fill="none" filter="url(#iconGlow)"/>
   
-  <!-- "10" in center -->
-  <text x="256" y="320" font-family="Arial, sans-serif" font-size="180" font-weight="bold" fill="url(#iconGradient)" text-anchor="middle" filter="url(#iconGlow)">10</text>
+  <!-- "1" in center -->
+  <text x="256" y="340" font-family="Arial, sans-serif" font-size="240" font-weight="bold" fill="url(#iconGradient)" text-anchor="middle" filter="url(#iconGlow)">1</text>
 </svg>
