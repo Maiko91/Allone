@@ -3,6 +3,7 @@ import { Card, CardContent, CardMedia, Typography, Box, Rating, Button } from '@
 import StarIcon from '@mui/icons-material/Star';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import type { Product } from '../types';
+import { useTranslation } from 'react-i18next';
 
 interface ProductCardProps {
     product: Product;
@@ -10,6 +11,7 @@ interface ProductCardProps {
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, rank }) => {
+    const { t } = useTranslation();
     const [expanded, setExpanded] = useState(false);
     const isLongDescription = product.description.length > 150;
 
@@ -66,7 +68,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, rank }) => {
                         emptyIcon={<StarIcon style={{ opacity: 0.55 }} fontSize="inherit" />}
                     />
                     <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
-                        ({product.reviewCount} reviews)
+                        ({product.reviewCount} {t('reviews')})
                     </Typography>
                 </Box>
 
@@ -99,7 +101,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, rank }) => {
                                 '&:hover': { bgcolor: 'transparent', textDecoration: 'underline' }
                             }}
                         >
-                            {expanded ? 'See Less' : 'See More...'}
+                            {expanded ? t('see_less') : t('see_more')}
                         </Button>
                     )}
                 </Box>
@@ -122,7 +124,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, rank }) => {
                             '&:hover': { bgcolor: '#b3e600' }
                         }}
                     >
-                        See Deal
+                        {t('see_deal')}
                     </Button>
                 </Box>
             </CardContent>

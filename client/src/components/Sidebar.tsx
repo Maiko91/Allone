@@ -9,6 +9,7 @@ import {
 } from '@mui/material';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
@@ -19,13 +20,14 @@ interface SidebarProps {
 }
 
 export const Sidebar = ({ onSelect, activeCategory, activeList }: SidebarProps) => {
+    const { t, i18n } = useTranslation();
     const [navigation, setNavigation] = useState<Record<string, string[]>>({});
     const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({});
 
     useEffect(() => {
         const fetchNavigation = async () => {
             try {
-                const response = await fetch(`${API_URL}/navigation`);
+                const response = await fetch(`${API_URL}/navigation?lang=${i18n.language}`);
                 const data = await response.json();
                 setNavigation(data);
 
@@ -39,7 +41,11 @@ export const Sidebar = ({ onSelect, activeCategory, activeList }: SidebarProps) 
         };
 
         fetchNavigation();
-    }, []);
+    }, [i18n.language]);
+
+    const changeLanguage = (lng: string) => {
+        i18n.changeLanguage(lng);
+    };
 
     const toggleCategory = (category: string) => {
         setOpenCategories(prev => ({
@@ -64,8 +70,22 @@ export const Sidebar = ({ onSelect, activeCategory, activeList }: SidebarProps) 
         >
             <List
                 subheader={
-                    <ListSubheader sx={{ bgcolor: 'transparent', color: 'primary.main', fontWeight: 'bold' }}>
-                        CATEGORÍAS
+                    <ListSubheader sx={{ bgcolor: 'transparent', color: 'primary.main', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', alignItems: 'center', pr: 1 }}>
+                        {t('sidebar_title').toUpperCase()}
+                        <Box sx={{ display: 'flex', gap: 0.5 }}>
+                            <ListItemButton
+                                onClick={() => changeLanguage('es')}
+                                sx={{ p: '2px 6px', fontSize: '0.7rem', minWidth: 0, borderRadius: 1, bgcolor: i18n.language === 'es' ? 'primary.main' : 'transparent', color: i18n.language === 'es' ? 'black' : 'white' }}
+                            >
+                                ES
+                            </ListItemButton>
+                            <ListItemButton
+                                onClick={() => changeLanguage('en')}
+                                sx={{ p: '2px 6px', fontSize: '0.7rem', minWidth: 0, borderRadius: 1, bgcolor: i18n.language === 'en' ? 'primary.main' : 'transparent', color: i18n.language === 'en' ? 'black' : 'white' }}
+                            >
+                                EN
+                            </ListItemButton>
+                        </Box>
                     </ListSubheader>
                 }
             >
@@ -76,7 +96,7 @@ export const Sidebar = ({ onSelect, activeCategory, activeList }: SidebarProps) 
                         '&.Mui-selected': { bgcolor: 'rgba(179, 230, 0, 0.1)' }
                     }}
                 >
-                    <ListItemText primary="Ver Todos" />
+                    <ListItemText primary={t('all_products')} />
                 </ListItemButton>
 
                 {Object.entries(navigation).map(([category, lists]) => (

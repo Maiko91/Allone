@@ -9,6 +9,12 @@ export interface List {
     categoryId: string;
 }
 
+export interface ProductTranslation {
+    lang: string;
+    title: string;
+    description: string;
+}
+
 export interface Product {
     id: string;
     title: string;
@@ -20,4 +26,5 @@ export interface Product {
     amazonUrl?: string | null;
     categories: Category[];
     lists: List[];
+    translations?: ProductTranslation[];
 }

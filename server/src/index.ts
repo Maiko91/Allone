@@ -26,31 +26,65 @@ app.get('/api/health', async (req: Request, res: Response) => {
 // GET all products (with filters)
 app.get('/api/products', async (req: Request, res: Response) => {
     try {
-        const { category, listName } = req.query;
+        const { category, listName, lang } = req.query;
+        const currentLang = (lang as string) || 'es';
 
         const products = await prisma.product.findMany({
             where: {
                 AND: [
                     category ? {
                         categories: {
-                            some: { name: category as string }
+                            some: {
+                                OR: [
+                                    { name: category as string },
+                                    { translations: { some: { name: category as string } } }
+                                ]
+                            }
                         }
                     } : {},
                     listName ? {
                         lists: {
-                            some: { name: listName as string }
+                            some: {
+                                OR: [
+                                    { name: listName as string },
+                                    { translations: { some: { name: listName as string } } }
+                                ]
+                            }
                         }
                     } : {}
                 ]
             },
             include: {
-                categories: true,
-                lists: true
+                categories: {
+                    include: { translations: { where: { lang: currentLang } } }
+                },
+                lists: {
+                    include: { translations: { where: { lang: currentLang } } }
+                },
+                translations: {
+                    where: { lang: currentLang }
+                }
             },
             orderBy: { rating: 'desc' },
             take: 100
         });
-        res.json(products);
+
+        // Mapear resultados para devolver el texto traducido
+        const translatedProducts = products.map(p => ({
+            ...p,
+            title: p.translations[0]?.title || p.title,
+            description: p.translations[0]?.description || p.description,
+            categories: p.categories.map(c => ({
+                ...c,
+                name: c.translations[0]?.name || c.name
+            })),
+            lists: p.lists.map(l => ({
+                ...l,
+                name: l.translations[0]?.name || l.name
+            }))
+        }));
+
+        res.json(translatedProducts);
     } catch (error) {
         console.error('Error fetching products:', error);
         res.status(500).json({ error: 'Failed to fetch products' });
@@ -60,16 +94,23 @@ app.get('/api/products', async (req: Request, res: Response) => {
 // GET Categories and Lists for Sidebar
 app.get('/api/navigation', async (req: Request, res: Response) => {
     try {
+        const { lang } = req.query;
+        const currentLang = (lang as string) || 'es';
+
         const categories = await prisma.category.findMany({
             include: {
-                lists: true
+                lists: {
+                    include: { translations: { where: { lang: currentLang } } }
+                },
+                translations: { where: { lang: currentLang } }
             }
         });
 
         const navigation: Record<string, string[]> = {};
 
         categories.forEach(cat => {
-            navigation[cat.name] = cat.lists.map(l => l.name);
+            const catName = cat.translations[0]?.name || cat.name;
+            navigation[catName] = cat.lists.map(l => l.translations[0]?.name || l.name);
         });
 
         res.json(navigation);
@@ -95,20 +136,28 @@ app.post('/api/scrape', async (req: Request, res: Response) => {
 // POST create new product
 app.post('/api/products', async (req: Request, res: Response) => {
     try {
-        const { title, description, price, rating, reviewCount, imageUrl, amazonUrl, category: categoryName, listName } = req.body;
+        const {
+            title, description, price, rating, reviewCount, imageUrl, amazonUrl,
+            category: categoryName, listName,
+            translations // Esperamos { en: { title: '...', description: '...' }, es: { ... } }
+        } = req.body;
 
         if (!title || !price) {
             return res.status(400).json({ error: 'Title and price are required' });
         }
 
-        // 1. Asegurar que la categoría existe
         const category = await prisma.category.upsert({
             where: { name: categoryName || 'General' },
             update: {},
             create: { name: categoryName || 'General' }
         });
 
-        // 2. Crear el producto con las relaciones
+        const translationData = translations ? Object.entries(translations).map(([l, data]: [string, any]) => ({
+            lang: l,
+            title: data.title,
+            description: data.description
+        })) : [];
+
         const newProduct = await prisma.product.create({
             data: {
                 title,
@@ -118,9 +167,7 @@ app.post('/api/products', async (req: Request, res: Response) => {
                 reviewCount: parseInt(reviewCount) || 0,
                 imageUrl: imageUrl || 'https://placehold.co/600x400?text=Product',
                 amazonUrl: amazonUrl || null,
-                categories: {
-                    connect: { id: category.id }
-                },
+                categories: { connect: { id: category.id } },
                 lists: {
                     connectOrCreate: {
                         where: {
@@ -134,11 +181,15 @@ app.post('/api/products', async (req: Request, res: Response) => {
                             categoryId: category.id
                         }
                     }
+                },
+                translations: {
+                    create: translationData
                 }
             },
             include: {
                 categories: true,
-                lists: true
+                lists: true,
+                translations: true
             }
         });
 
@@ -153,7 +204,11 @@ app.post('/api/products', async (req: Request, res: Response) => {
 app.put('/api/products/:id', async (req: Request, res: Response) => {
     try {
         const id = req.params.id as string;
-        const { title, description, price, rating, reviewCount, imageUrl, amazonUrl, category: categoryName, listName } = req.body;
+        const {
+            title, description, price, rating, reviewCount, imageUrl, amazonUrl,
+            category: categoryName, listName,
+            translations
+        } = req.body;
 
         const data: any = {
             ...(title && { title }),
@@ -165,7 +220,17 @@ app.put('/api/products/:id', async (req: Request, res: Response) => {
             ...(amazonUrl !== undefined && { amazonUrl })
         };
 
-        // Si se actualiza categoría o lista, manejamos la relación
+        if (translations) {
+            data.translations = {
+                deleteMany: {},
+                create: Object.entries(translations).map(([l, tData]: [string, any]) => ({
+                    lang: l,
+                    title: tData.title,
+                    description: tData.description
+                }))
+            };
+        }
+
         if (categoryName) {
             const category = await prisma.category.upsert({
                 where: { name: categoryName },
@@ -173,24 +238,16 @@ app.put('/api/products/:id', async (req: Request, res: Response) => {
                 create: { name: categoryName }
             });
 
-            data.categories = {
-                set: [{ id: category.id }]
-            };
+            data.categories = { set: [{ id: category.id }] };
 
             if (listName) {
                 data.lists = {
-                    set: [], // Limpiamos listas anteriores si se especifica una nueva bajo una categoría
+                    set: [],
                     connectOrCreate: {
                         where: {
-                            name_categoryId: {
-                                name: listName,
-                                categoryId: category.id
-                            }
+                            name_categoryId: { name: listName, categoryId: category.id }
                         },
-                        create: {
-                            name: listName,
-                            categoryId: category.id
-                        }
+                        create: { name: listName, categoryId: category.id }
                     }
                 };
             }
@@ -201,7 +258,8 @@ app.put('/api/products/:id', async (req: Request, res: Response) => {
             data,
             include: {
                 categories: true,
-                lists: true
+                lists: true,
+                translations: true
             }
         });
 
@@ -225,6 +283,119 @@ app.delete('/api/products/:id', async (req: Request, res: Response) => {
     } catch (error) {
         console.error('Error deleting product:', error);
         res.status(500).json({ error: 'Failed to delete product' });
+    }
+});
+
+// --- CATEGORY MANAGEMENT ---
+
+// GET all categories
+app.get('/api/categories', async (req: Request, res: Response) => {
+    try {
+        const categories = await prisma.category.findMany({
+            include: {
+                translations: true,
+                _count: { select: { products: true, lists: true } }
+            }
+        });
+        res.json(categories);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch categories' });
+    }
+});
+
+// PUT update category
+app.put('/api/categories/:id', async (req: Request, res: Response) => {
+    try {
+        const id = req.params.id as string;
+        const { name, translations } = req.body;
+
+        const updated = await prisma.category.update({
+            where: { id },
+            data: {
+                name,
+                translations: {
+                    deleteMany: {},
+                    create: Object.entries(translations).map(([l, data]: [string, any]) => ({
+                        lang: l,
+                        name: data.name
+                    }))
+                }
+            },
+            include: { translations: true }
+        });
+        res.json(updated);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to update category' });
+    }
+});
+
+// DELETE category
+app.delete('/api/categories/:id', async (req: Request, res: Response) => {
+    try {
+        const id = req.params.id as string;
+        // Safeguard: Check if it has products? Or just let Prisma handle relations.
+        // The schema doesn't have onDelete: Cascade for Category to Product.
+        // We should probably disconnect or notify.
+        await prisma.category.delete({ where: { id } });
+        res.status(204).send();
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to delete category. Make sure it has no products or disconnect them first.' });
+    }
+});
+
+// --- LIST MANAGEMENT ---
+
+// GET all lists
+app.get('/api/lists', async (req: Request, res: Response) => {
+    try {
+        const lists = await prisma.list.findMany({
+            include: {
+                translations: true,
+                category: { include: { translations: true } },
+                _count: { select: { products: true } }
+            }
+        });
+        res.json(lists);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch lists' });
+    }
+});
+
+// PUT update list
+app.put('/api/lists/:id', async (req: Request, res: Response) => {
+    try {
+        const id = req.params.id as string;
+        const { name, categoryId, translations } = req.body;
+
+        const updated = await prisma.list.update({
+            where: { id },
+            data: {
+                name,
+                categoryId,
+                translations: {
+                    deleteMany: {},
+                    create: Object.entries(translations).map(([l, data]: [string, any]) => ({
+                        lang: l,
+                        name: data.name
+                    }))
+                }
+            },
+            include: { translations: true }
+        });
+        res.json(updated);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to update list' });
+    }
+});
+
+// DELETE list
+app.delete('/api/lists/:id', async (req: Request, res: Response) => {
+    try {
+        const id = req.params.id as string;
+        await prisma.list.delete({ where: { id } });
+        res.status(204).send();
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to delete list.' });
     }
 });
 

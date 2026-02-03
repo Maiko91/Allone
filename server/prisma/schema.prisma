@@ -8,37 +8,71 @@ datasource db {
 }
 
 model Product {
-  id          String     @id @default(uuid())
+  id           String               @id @default(uuid())
+  title        String // Valor por defecto (ES)
+  description  String // Valor por defecto (ES)
+  price        Float
+  rating       Float
+  reviewCount  Int
+  imageUrl     String
+  amazonUrl    String?
+  categories   Category[]           @relation("CategoryToProduct")
+  lists        List[]               @relation("ListToProduct")
+  translations ProductTranslation[]
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+}
+
+model ProductTranslation {
+  id          String  @id @default(uuid())
+  productId   String
+  product     Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  lang        String // 'es' o 'en'
   title       String
   description String
-  price       Float
-  rating      Float
-  reviewCount Int
-  imageUrl    String
-  amazonUrl   String?
-  categories  Category[] @relation("CategoryToProduct")
-  lists       List[]     @relation("ListToProduct")
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+
+  @@unique([productId, lang])
 }
 
 model Category {
-  id        String    @id @default(uuid())
-  name      String    @unique
-  products  Product[] @relation("CategoryToProduct")
-  lists     List[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id           String                @id @default(uuid())
+  name         String                @unique // Valor por defecto (ES)
+  products     Product[]             @relation("CategoryToProduct")
+  lists        List[]
+  translations CategoryTranslation[]
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+}
+
+model CategoryTranslation {
+  id         String   @id @default(uuid())
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  lang       String
+  name       String
+
+  @@unique([categoryId, lang])
 }
 
 model List {
-  id         String    @id @default(uuid())
-  name       String
-  categoryId String
-  category   Category  @relation(fields: [categoryId], references: [id])
-  products   Product[] @relation("ListToProduct")
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  id           String            @id @default(uuid())
+  name         String // Valor por defecto (ES)
+  categoryId   String
+  category     Category          @relation(fields: [categoryId], references: [id])
+  products     Product[]         @relation("ListToProduct")
+  translations ListTranslation[]
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
 
   @@unique([name, categoryId])
+}
+
+model ListTranslation {
+  id     String @id @default(uuid())
+  listId String
+  list   List   @relation(fields: [listId], references: [id], onDelete: Cascade)
+  lang   String
+  name   String
+
+  @@unique([listId, lang])
 }

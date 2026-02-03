@@ -10,14 +10,22 @@ async function main() {
     // await prisma.product.deleteMany();
     // await prisma.category.deleteMany();
 
-    // 2. Crear categoría base
+    // 2. Crear categoría base con traducción
     const generalCategory = await prisma.category.upsert({
         where: { name: 'General' },
         update: {},
-        create: { name: 'General' },
+        create: {
+            name: 'General',
+            translations: {
+                create: [
+                    { lang: 'es', name: 'General' },
+                    { lang: 'en', name: 'General' }
+                ]
+            }
+        },
     });
 
-    // 3. Crear lista base
+    // 3. Crear lista base con traducción
     const defaultList = await prisma.list.upsert({
         where: {
             name_categoryId: {
@@ -29,6 +37,12 @@ async function main() {
         create: {
             name: 'Top 10 General',
             categoryId: generalCategory.id,
+            translations: {
+                create: [
+                    { lang: 'es', name: 'Top 10 General' },
+                    { lang: 'en', name: 'Generic Top 10' }
+                ]
+            }
         },
     });
 

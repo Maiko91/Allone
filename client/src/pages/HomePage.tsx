@@ -5,8 +5,10 @@ import { ProductList } from '../components/ProductList';
 import { Sidebar } from '../components/Sidebar';
 import { searchProducts } from '../services/productService';
 import type { Product } from '../types';
+import { useTranslation } from 'react-i18next';
 
 export function HomePage() {
+    const { t, i18n } = useTranslation();
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeCategory, setActiveCategory] = useState<string | null>(null);
@@ -15,11 +17,11 @@ export function HomePage() {
 
     useEffect(() => {
         loadProducts(searchQuery, activeCategory, activeList);
-    }, [activeCategory, activeList]);
+    }, [activeCategory, activeList, i18n.language]);
 
     // SEO: Actualizar Título y Meta Descripción dinámicamente
     useEffect(() => {
-        const title = activeList || activeCategory || 'Todos los Productos';
+        const title = activeList || activeCategory || t('all_products');
         document.title = `${title} | AllOne - Ranking Top 10`;
 
         const metaDesc = document.querySelector('meta[name="description"]');
@@ -81,7 +83,7 @@ export function HomePage() {
     const loadProducts = async (query: string, category: string | null = null, list: string | null = null) => {
         setLoading(true);
         setSearchQuery(query);
-        const results = await searchProducts(query, category, list);
+        const results = await searchProducts(query, category, list, i18n.language);
         setProducts(results);
         setLoading(false);
     };
@@ -109,11 +111,11 @@ export function HomePage() {
                     <Grid size={{ xs: 12, md: 9, lg: 9.5 }}>
                         <Box sx={{ mb: 4 }}>
                             <Typography variant="h1" sx={{ fontSize: '2.5rem', fontWeight: 700, color: 'white', mb: 1 }}>
-                                {activeList || activeCategory || 'Todos los Productos'}
+                                {activeList || activeCategory || t('all_products')}
                             </Typography>
                             {(activeCategory || activeList) && (
                                 <Typography variant="body1" color="text.secondary">
-                                    Explora nuestra selección experta de los mejores {activeList || activeCategory} de 2024.
+                                    {t('category_description', { category: activeList || activeCategory })}
                                 </Typography>
                             )}
                         </Box>
