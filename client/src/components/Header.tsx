@@ -71,7 +71,7 @@ export function Header() {
                     }}
                 >
                     <img
-                        src="/assets/logo.png"
+                        src="/assets/logo.svg"
                         alt="allOne"
                         style={{
                             height: '40px',
