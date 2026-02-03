@@ -10,7 +10,7 @@ interface HeroProps {
 
 export const Hero: React.FC<HeroProps> = ({ onSearch }) => {
     const { t } = useTranslation();
-    const { mode } = useAppTheme();
+    const { themeId } = useAppTheme();
     const theme = useTheme();
     const [query, setQuery] = useState('');
 
@@ -21,7 +21,7 @@ export const Hero: React.FC<HeroProps> = ({ onSearch }) => {
         }
     };
 
-    const isDark = mode === 'dark';
+    const isDark = themeId === 'dark' || themeId === 'glass';
 
     return (
         <Box

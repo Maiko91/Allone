@@ -4,15 +4,15 @@ import { useAuth } from '../contexts/AuthContext';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useAppTheme } from '../contexts/ThemeContext';
-import LightModeIcon from '@mui/icons-material/LightMode';
-import DarkModeIcon from '@mui/icons-material/DarkMode';
+import { useAppTheme, type ThemeId } from '../contexts/ThemeContext';
+import PaletteIcon from '@mui/icons-material/Palette';
 
 export function Header() {
     const { user, login, logout, isAdmin } = useAuth();
     const { t, i18n } = useTranslation();
-    const { mode, toggleTheme } = useAppTheme();
+    const { themeId, setTheme } = useAppTheme();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const [themeAnchorEl, setThemeAnchorEl] = useState<null | HTMLElement>(null);
     const navigate = useNavigate();
 
     const changeLanguage = (lng: string) => {
@@ -23,8 +23,18 @@ export function Header() {
         setAnchorEl(event.currentTarget);
     };
 
+    const handleThemeMenu = (event: React.MouseEvent<HTMLElement>) => {
+        setThemeAnchorEl(event.currentTarget);
+    };
+
     const handleClose = () => {
         setAnchorEl(null);
+        setThemeAnchorEl(null);
+    };
+
+    const handleThemeSelect = (id: ThemeId) => {
+        setTheme(id);
+        handleClose();
     };
 
     const handleLogout = () => {
@@ -38,13 +48,15 @@ export function Header() {
         navigate('/admin');
     };
 
+    const isDark = themeId === 'dark' || themeId === 'glass';
+
     return (
         <AppBar position="sticky" sx={{
-            bgcolor: mode === 'dark' ? '#1a1a1a' : 'rgba(255,255,255,0.8)',
+            bgcolor: themeId === 'dark' ? '#1a1a1a' : (themeId === 'glass' ? 'rgba(10,10,10,0.8)' : 'rgba(255,255,255,0.8)'),
             backdropFilter: 'blur(8px)',
-            boxShadow: mode === 'dark' ? 3 : '0 2px 10px rgba(0,0,0,0.05)',
-            borderBottom: mode === 'dark' ? 'none' : '1px solid rgba(0,0,0,0.05)',
-            color: mode === 'dark' ? 'white' : 'text.primary'
+            boxShadow: themeId === 'dark' ? 3 : '0 2px 10px rgba(0,0,0,0.05)',
+            borderBottom: isDark ? 'none' : '1px solid rgba(0,0,0,0.05)',
+            color: isDark ? 'white' : 'text.primary'
         }}>
             <Toolbar sx={{ justifyContent: 'space-between' }}>
                 <Typography
@@ -53,7 +65,7 @@ export function Header() {
                     href="/"
                     sx={{
                         textDecoration: 'none',
-                        color: mode === 'dark' ? 'primary.main' : 'text.primary',
+                        color: themeId === 'dark' ? 'primary.main' : (themeId === 'glass' ? '#00e5ff' : 'text.primary'),
                         fontWeight: 700,
                         '&:hover': { opacity: 0.8 }
                     }}
@@ -63,7 +75,7 @@ export function Header() {
 
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, md: 2 } }}>
                     {/* Language Switcher */}
-                    <Box sx={{ display: 'flex', bgcolor: mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', p: 0.5, borderRadius: 2 }}>
+                    <Box sx={{ display: 'flex', bgcolor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', p: 0.5, borderRadius: 2 }}>
                         <Button
                             onClick={() => changeLanguage('es')}
                             sx={{
@@ -72,8 +84,8 @@ export function Header() {
                                 height: 32,
                                 borderRadius: 1.5,
                                 fontSize: '0.75rem',
-                                bgcolor: i18n.language === 'es' ? (mode === 'dark' ? 'primary.main' : '#1a1a1a') : 'transparent',
-                                color: i18n.language === 'es' ? (mode === 'dark' ? 'black' : 'white') : (mode === 'dark' ? 'white' : 'text.primary'),
+                                bgcolor: i18n.language === 'es' ? (isDark ? 'primary.main' : '#1a1a1a') : 'transparent',
+                                color: i18n.language === 'es' ? (isDark ? 'black' : 'white') : (isDark ? 'white' : 'text.primary'),
                                 '&:hover': { bgcolor: i18n.language === 'es' ? 'primary.main' : 'rgba(255,255,255,0.1)' }
                             }}
                         >
@@ -87,8 +99,8 @@ export function Header() {
                                 height: 32,
                                 borderRadius: 1.5,
                                 fontSize: '0.75rem',
-                                bgcolor: i18n.language === 'en' ? (mode === 'dark' ? 'primary.main' : '#1a1a1a') : 'transparent',
-                                color: i18n.language === 'en' ? (mode === 'dark' ? 'black' : 'white') : (mode === 'dark' ? 'white' : 'text.primary'),
+                                bgcolor: i18n.language === 'en' ? (isDark ? 'primary.main' : '#1a1a1a') : 'transparent',
+                                color: i18n.language === 'en' ? (isDark ? 'black' : 'white') : (isDark ? 'white' : 'text.primary'),
                                 '&:hover': { bgcolor: i18n.language === 'en' ? 'primary.main' : 'rgba(255,255,255,0.1)' }
                             }}
                         >
@@ -96,10 +108,26 @@ export function Header() {
                         </Button>
                     </Box>
 
-                    {/* Theme Toggle */}
-                    <IconButton onClick={toggleTheme} sx={{ color: 'inherit' }}>
-                        {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
+                    {/* Theme Selector */}
+                    <IconButton onClick={handleThemeMenu} sx={{ color: 'inherit' }}>
+                        <PaletteIcon />
                     </IconButton>
+                    <Menu
+                        anchorEl={themeAnchorEl}
+                        open={Boolean(themeAnchorEl)}
+                        onClose={handleClose}
+                        PaperProps={{ sx: { mt: 1.5, minWidth: 150 } }}
+                    >
+                        <MenuItem onClick={() => handleThemeSelect('dark')} selected={themeId === 'dark'}>
+                            {t('theme_dark', { defaultValue: 'Dark (Original)' })}
+                        </MenuItem>
+                        <MenuItem onClick={() => handleThemeSelect('light')} selected={themeId === 'light'}>
+                            {t('theme_light', { defaultValue: 'Minimalist (Light)' })}
+                        </MenuItem>
+                        <MenuItem onClick={() => handleThemeSelect('glass')} selected={themeId === 'glass'}>
+                            {t('theme_glass', { defaultValue: 'Modern (Glass)' })}
+                        </MenuItem>
+                    </Menu>
 
                     {user ? (
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -111,8 +139,8 @@ export function Header() {
                                     sx={{
                                         textTransform: 'none',
                                         display: { xs: 'none', sm: 'inline-flex' },
-                                        color: mode === 'dark' ? 'primary.main' : 'text.primary',
-                                        borderColor: mode === 'dark' ? 'primary.main' : 'rgba(0,0,0,0.2)'
+                                        color: isDark ? 'primary.main' : 'text.primary',
+                                        borderColor: isDark ? 'primary.main' : 'rgba(0,0,0,0.2)'
                                     }}
                                 >
                                     {t('admin_panel')}
@@ -127,7 +155,7 @@ export function Header() {
                                     width: 35,
                                     height: 35,
                                     border: '2px solid',
-                                    borderColor: mode === 'dark' ? 'primary.main' : 'rgba(0,0,0,0.1)'
+                                    borderColor: isDark ? 'primary.main' : 'rgba(0,0,0,0.1)'
                                 }}
                             />
                             <Menu
@@ -161,7 +189,7 @@ export function Header() {
                             onError={() => {
                                 console.error('Login Failed');
                             }}
-                            theme={mode === 'dark' ? "filled_black" : "outline"}
+                            theme={isDark ? "filled_black" : "outline"}
                             size="medium"
                             text="signin_with"
                             shape="pill"

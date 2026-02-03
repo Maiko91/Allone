@@ -5,8 +5,7 @@ import {
     Collapse,
     ListItemButton,
     ListSubheader,
-    Paper,
-    Typography
+    Paper
 } from '@mui/material';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
@@ -23,11 +22,11 @@ interface SidebarProps {
 
 export const Sidebar = ({ onSelect, activeCategory, activeList }: SidebarProps) => {
     const { t, i18n } = useTranslation();
-    const { mode } = useAppTheme();
+    const { themeId } = useAppTheme();
     const [navigation, setNavigation] = useState<Record<string, string[]>>({});
     const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({});
 
-    const isDark = mode === 'dark';
+    const isDark = themeId === 'dark' || themeId === 'glass';
 
     useEffect(() => {
         const fetchNavigation = async () => {

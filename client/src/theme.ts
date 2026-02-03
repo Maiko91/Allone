@@ -118,3 +118,65 @@ export const lightTheme = createTheme({
     },
   },
 });
+
+export const glassTheme = createTheme({
+  ...commonSettings,
+  palette: {
+    mode: 'dark',
+    primary: {
+      main: '#00e5ff', // Cyan for a futuristic glass feel
+    },
+    background: {
+      default: '#050505',
+      paper: 'rgba(20, 20, 20, 0.7)', // Semi-transparent
+    },
+    text: {
+      primary: '#ffffff',
+      secondary: 'rgba(255, 255, 255, 0.6)',
+    },
+  },
+  components: {
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: 20,
+          background: 'rgba(255, 255, 255, 0.05)',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+          transition: 'all 0.3s ease',
+          '&:hover': {
+            background: 'rgba(255, 255, 255, 0.1)',
+            transform: 'scale(1.02)',
+            borderColor: 'rgba(0, 229, 255, 0.4)',
+          },
+        },
+      },
+    },
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          background: 'rgba(10, 10, 10, 0.8)',
+          backdropFilter: 'blur(15px)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+          boxShadow: 'none',
+        },
+      },
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 12,
+          backdropFilter: 'blur(4px)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+        },
+      },
+    },
+  },
+});
+
+export const themes = {
+  dark: darkTheme,
+  light: lightTheme,
+  glass: glassTheme,
+};

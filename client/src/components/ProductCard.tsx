@@ -13,10 +13,10 @@ interface ProductCardProps {
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, rank }) => {
     const { t } = useTranslation();
-    const { mode } = useAppTheme();
+    const { themeId } = useAppTheme();
     const [expanded, setExpanded] = useState(false);
     const isLongDescription = product.description.length > 150;
-    const isDark = mode === 'dark';
+    const isDark = themeId === 'dark' || themeId === 'glass';
 
     return (
         <Card sx={{
