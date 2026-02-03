@@ -5,11 +5,13 @@ import {
     Collapse,
     ListItemButton,
     ListSubheader,
-    Paper
+    Paper,
+    Typography
 } from '@mui/material';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useAppTheme } from '../contexts/ThemeContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
@@ -21,8 +23,11 @@ interface SidebarProps {
 
 export const Sidebar = ({ onSelect, activeCategory, activeList }: SidebarProps) => {
     const { t, i18n } = useTranslation();
+    const { mode } = useAppTheme();
     const [navigation, setNavigation] = useState<Record<string, string[]>>({});
     const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({});
+
+    const isDark = mode === 'dark';
 
     useEffect(() => {
         const fetchNavigation = async () => {
@@ -43,8 +48,6 @@ export const Sidebar = ({ onSelect, activeCategory, activeList }: SidebarProps) 
         fetchNavigation();
     }, [i18n.language]);
 
-
-
     const toggleCategory = (category: string) => {
         setOpenCategories(prev => ({
             ...prev,
@@ -57,18 +60,30 @@ export const Sidebar = ({ onSelect, activeCategory, activeList }: SidebarProps) 
             elevation={0}
             sx={{
                 width: 280,
-                bgcolor: '#1e1e1e',
-                borderRadius: 2,
+                bgcolor: isDark ? '#1e1e1e' : 'white',
+                borderRadius: isDark ? 2 : 4,
                 overflow: 'hidden',
-                border: '1px solid rgba(255,255,255,0.1)',
+                border: isDark ? '1px solid rgba(255,255,255,0.1)' : 'none',
+                boxShadow: isDark ? 'none' : '0 4px 20px rgba(0,0,0,0.05)',
                 height: 'fit-content',
                 position: 'sticky',
-                top: 100
+                top: 100,
+                p: 1
             }}
         >
             <List
                 subheader={
-                    <ListSubheader sx={{ bgcolor: 'transparent', color: 'primary.main', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', alignItems: 'center', pr: 1 }}>
+                    <ListSubheader sx={{
+                        bgcolor: 'transparent',
+                        color: isDark ? 'primary.main' : 'text.primary',
+                        fontWeight: 800,
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        pr: 1,
+                        fontSize: '0.9rem',
+                        letterSpacing: 1
+                    }}>
                         {t('sidebar_title').toUpperCase()}
                     </ListSubheader>
                 }
@@ -77,18 +92,29 @@ export const Sidebar = ({ onSelect, activeCategory, activeList }: SidebarProps) 
                     onClick={() => onSelect(null, null)}
                     selected={activeCategory === null}
                     sx={{
-                        '&.Mui-selected': { bgcolor: 'rgba(179, 230, 0, 0.1)' }
+                        borderRadius: 2,
+                        mb: 0.5,
+                        '&.Mui-selected': {
+                            bgcolor: isDark ? 'rgba(204, 255, 0, 0.1)' : 'rgba(0,0,0,0.05)',
+                            '&:hover': { bgcolor: isDark ? 'rgba(204, 255, 0, 0.2)' : 'rgba(0,0,0,0.08)' }
+                        }
                     }}
                 >
-                    <ListItemText primary={t('all_products')} />
+                    <ListItemText primary={t('all_products')} primaryTypographyProps={{ fontWeight: activeCategory === null ? 700 : 500 }} />
                 </ListItemButton>
 
                 {Object.entries(navigation).map(([category, lists]) => (
-                    <Box key={category}>
-                        <ListItemButton onClick={() => toggleCategory(category)}>
+                    <Box key={category} sx={{ mb: 1 }}>
+                        <ListItemButton
+                            onClick={() => toggleCategory(category)}
+                            sx={{ borderRadius: 2 }}
+                        >
                             <ListItemText
                                 primary={category}
-                                primaryTypographyProps={{ fontWeight: activeCategory === category ? 'bold' : 'normal' }}
+                                primaryTypographyProps={{
+                                    fontWeight: activeCategory === category ? 800 : 600,
+                                    fontSize: '0.95rem'
+                                }}
                             />
                             {openCategories[category] ? <ExpandLess /> : <ExpandMore />}
                         </ListItemButton>
@@ -100,7 +126,13 @@ export const Sidebar = ({ onSelect, activeCategory, activeList }: SidebarProps) 
                                         key={listName}
                                         sx={{
                                             pl: 4,
-                                            '&.Mui-selected': { bgcolor: 'rgba(179, 230, 0, 0.2)' }
+                                            borderRadius: 2,
+                                            my: 0.2,
+                                            '&.Mui-selected': {
+                                                bgcolor: isDark ? 'rgba(204, 255, 0, 0.15)' : 'primary.main',
+                                                color: isDark ? 'white' : 'white',
+                                                '& .MuiListItemText-secondary': { color: 'white' }
+                                            }
                                         }}
                                         selected={activeList === listName}
                                         onClick={() => onSelect(category, listName)}
@@ -108,8 +140,9 @@ export const Sidebar = ({ onSelect, activeCategory, activeList }: SidebarProps) 
                                         <ListItemText
                                             secondary={listName}
                                             secondaryTypographyProps={{
-                                                color: activeList === listName ? 'primary.main' : 'text.secondary',
-                                                fontSize: '0.875rem'
+                                                color: activeList === listName ? (isDark ? 'primary.main' : 'inherit') : 'text.secondary',
+                                                fontSize: '0.85rem',
+                                                fontWeight: activeList === listName ? 700 : 500
                                             }}
                                         />
                                     </ListItemButton>

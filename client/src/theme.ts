@@ -1,6 +1,24 @@
 import { createTheme } from '@mui/material/styles';
 
-export const theme = createTheme({
+const commonSettings = {
+  typography: {
+    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+    h1: {
+      fontWeight: 700,
+      letterSpacing: '-0.02em',
+    },
+    h2: {
+      fontWeight: 600,
+      letterSpacing: '-0.01em',
+    },
+  },
+  shape: {
+    borderRadius: 12,
+  },
+};
+
+export const darkTheme = createTheme({
+  ...commonSettings,
   palette: {
     mode: 'dark',
     primary: {
@@ -13,17 +31,6 @@ export const theme = createTheme({
     text: {
       primary: '#ffffff',
       secondary: '#a0a0a0',
-    },
-  },
-  typography: {
-    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
-    h1: {
-      fontWeight: 700,
-      letterSpacing: '-0.02em',
-    },
-    h2: {
-      fontWeight: 600,
-      letterSpacing: '-0.01em',
     },
   },
   components: {
@@ -49,6 +56,63 @@ export const theme = createTheme({
           borderRadius: 8,
           textTransform: 'none',
           fontWeight: 600,
+        },
+      },
+    },
+  },
+});
+
+export const lightTheme = createTheme({
+  ...commonSettings,
+  palette: {
+    mode: 'light',
+    primary: {
+      main: '#1a1a1a', // Professional black/grey
+    },
+    secondary: {
+      main: '#3f51b5',
+    },
+    background: {
+      default: '#f0f2f5',
+      paper: '#ffffff',
+    },
+    text: {
+      primary: '#111111',
+      secondary: '#666666',
+    },
+  },
+  shape: {
+    borderRadius: 20, // More rounded for Minimalist style
+  },
+  components: {
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: 24,
+          boxShadow: '0 10px 30px rgba(0,0,0,0.05)',
+          border: 'none',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          '&:hover': {
+            transform: 'translateY(-8px)',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+          },
+        },
+      },
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 30, // Pill shaped buttons
+          textTransform: 'none',
+          fontWeight: 700,
+          padding: '10px 24px',
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          backgroundImage: 'none',
         },
       },
     },
