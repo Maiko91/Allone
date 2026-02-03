@@ -10,7 +10,7 @@
     "prisma:push": "prisma db push"
   },
   "dependencies": {
-    "@prisma/client": "5.22.0",
+    "@prisma/client": "^6.3.0",
     "axios": "^1.7.9",
     "cheerio": "^1.0.0",
     "cors": "^2.8.6",
@@ -21,7 +21,7 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^25.1.0",
-    "prisma": "5.22.0",
+    "prisma": "^6.3.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   },

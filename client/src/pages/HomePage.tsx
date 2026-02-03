@@ -26,7 +26,7 @@ export function HomePage() {
 
         const metaDesc = document.querySelector('meta[name="description"]');
         if (metaDesc) {
-            metaDesc.setAttribute('content', `Descubre el Top 10 de ${title}. Análisis profundos, valoraciones reales y los mejores precios actualizados.`);
+            metaDesc.setAttribute('content', t('meta_description', { title }));
         }
     }, [activeCategory, activeList]);
 

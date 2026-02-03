@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { Box, Typography, TextField, InputAdornment, Button, Container } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import { useTranslation } from 'react-i18next';
 
 interface HeroProps {
     onSearch: (query: string) => void;
 }
 
 export const Hero: React.FC<HeroProps> = ({ onSearch }) => {
+    const { t } = useTranslation();
     const [query, setQuery] = useState('');
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -20,7 +22,7 @@ export const Hero: React.FC<HeroProps> = ({ onSearch }) => {
         <Box
             sx={{
                 width: '100%',
-                minHeight: '60vh',
+                minHeight: '40vh',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',
@@ -31,8 +33,8 @@ export const Hero: React.FC<HeroProps> = ({ onSearch }) => {
           linear-gradient(180deg, #0a0a0a 0%, #111 100%)
         `,
                 position: 'relative',
-                pt: 8,
-                pb: 8,
+                pt: 6,
+                pb: 6,
             }}
         >
             <Container maxWidth="md">
@@ -40,7 +42,7 @@ export const Hero: React.FC<HeroProps> = ({ onSearch }) => {
                     variant="overline"
                     sx={{ color: 'rgba(255,255,255,0.6)', letterSpacing: 2, mb: 1, display: 'block' }}
                 >
-                    Discover Quality
+                    {t('discover_quality')}
                 </Typography>
 
                 <Typography
@@ -53,19 +55,20 @@ export const Hero: React.FC<HeroProps> = ({ onSearch }) => {
                         WebkitBackgroundClip: 'text',
                         WebkitTextFillColor: 'transparent',
                         letterSpacing: '-2px',
+                        fontSize: { xs: '2.5rem', md: '3.75rem' }
                     }}
                 >
-                    Find the Top 10 Best Sellers
+                    {t('hero_title')}
                 </Typography>
 
-                <Typography variant="body1" sx={{ color: 'text.secondary', mb: 6, maxWidth: 600, mx: 'auto' }}>
-                    Enter a category like "Cell Phones" or "Laptops" and let our AI curate the highest rated Amazon products for you instantly.
+                <Typography variant="body1" sx={{ color: 'text.secondary', mb: 4, maxWidth: 600, mx: 'auto' }}>
+                    {t('hero_subtitle')}
                 </Typography>
 
                 <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', gap: 2, justifyContent: 'center', maxWidth: 600, mx: 'auto', width: '100%', px: 2 }}>
                     <TextField
                         fullWidth
-                        placeholder="Search for a topic (e.g. Headphones)..."
+                        placeholder={t('search_placeholder')}
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         variant="outlined"
@@ -89,9 +92,9 @@ export const Hero: React.FC<HeroProps> = ({ onSearch }) => {
                         type="submit"
                         variant="contained"
                         size="large"
-                        sx={{ px: 4, borderRadius: 3, color: 'black' }}
+                        sx={{ px: 4, borderRadius: 3, color: 'black', fontWeight: 'bold' }}
                     >
-                        Search
+                        {t('search')}
                     </Button>
                 </Box>
             </Container>
