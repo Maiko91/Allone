@@ -26,7 +26,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, rank }) => {
             position: 'relative',
             overflow: 'visible',
             bgcolor: isDark ? 'background.paper' : 'white',
-            borderRadius: isDark ? 4 : 6,
         }}>
             {/* Rank Badge */}
             <Box
@@ -77,6 +76,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, rank }) => {
                     sx={{
                         height: 200,
                         width: 'auto',
+                        maxWidth: '100%',
                         objectFit: 'contain',
                         zIndex: 1,
                         filter: isDark ? 'drop-shadow(0 0 10px rgba(0,0,0,0.5))' : 'none'
@@ -159,7 +159,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, rank }) => {
                             bgcolor: isDark ? 'primary.main' : '#1a1a1a',
                             color: isDark ? 'black' : 'white',
                             fontWeight: 800,
-                            borderRadius: isDark ? 2 : 4,
                             px: 3,
                             '&:hover': {
                                 bgcolor: isDark ? '#b3e600' : '#333',

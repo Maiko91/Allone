@@ -60,7 +60,6 @@ export const Sidebar = ({ onSelect, activeCategory, activeList }: SidebarProps) 
             sx={{
                 width: 280,
                 bgcolor: isDark ? '#1e1e1e' : 'white',
-                borderRadius: isDark ? 2 : 4,
                 overflow: 'hidden',
                 border: isDark ? '1px solid rgba(255,255,255,0.1)' : 'none',
                 boxShadow: isDark ? 'none' : '0 4px 20px rgba(0,0,0,0.05)',
@@ -91,7 +90,6 @@ export const Sidebar = ({ onSelect, activeCategory, activeList }: SidebarProps) 
                     onClick={() => onSelect(null, null)}
                     selected={activeCategory === null}
                     sx={{
-                        borderRadius: 2,
                         mb: 0.5,
                         '&.Mui-selected': {
                             bgcolor: isDark ? 'rgba(204, 255, 0, 0.1)' : 'rgba(0,0,0,0.05)',
@@ -106,7 +104,6 @@ export const Sidebar = ({ onSelect, activeCategory, activeList }: SidebarProps) 
                     <Box key={category} sx={{ mb: 1 }}>
                         <ListItemButton
                             onClick={() => toggleCategory(category)}
-                            sx={{ borderRadius: 2 }}
                         >
                             <ListItemText
                                 primary={category}
@@ -125,7 +122,6 @@ export const Sidebar = ({ onSelect, activeCategory, activeList }: SidebarProps) 
                                         key={listName}
                                         sx={{
                                             pl: 4,
-                                            borderRadius: 2,
                                             my: 0.2,
                                             '&.Mui-selected': {
                                                 bgcolor: isDark ? 'rgba(204, 255, 0, 0.15)' : 'primary.main',

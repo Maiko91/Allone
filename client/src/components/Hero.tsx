@@ -110,7 +110,7 @@ export const Hero: React.FC<HeroProps> = ({ onSearch }) => {
                             ),
                             sx: {
                                 bgcolor: isDark ? 'rgba(255,255,255,0.05)' : 'white',
-                                borderRadius: isDark ? 3 : 4,
+                                borderRadius: 3,
                                 color: isDark ? 'white' : 'text.primary',
                                 boxShadow: isDark ? 'none' : '0 4px 20px rgba(0,0,0,0.05)',
                                 '& fieldset': { borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' },
@@ -125,7 +125,7 @@ export const Hero: React.FC<HeroProps> = ({ onSearch }) => {
                         size="large"
                         sx={{
                             px: 5,
-                            borderRadius: isDark ? 3 : 4,
+                            borderRadius: 3,
                             color: isDark ? 'black' : 'white',
                             fontWeight: 800,
                             bgcolor: isDark ? 'primary.main' : 'primary.main',

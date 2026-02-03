@@ -13,7 +13,7 @@ const commonSettings = {
     },
   },
   shape: {
-    borderRadius: 12,
+    borderRadius: 16,
   },
 };
 
@@ -53,7 +53,7 @@ export const darkTheme = createTheme({
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 8,
+          borderRadius: 12,
           textTransform: 'none',
           fontWeight: 600,
         },
@@ -81,14 +81,11 @@ export const lightTheme = createTheme({
       secondary: '#666666',
     },
   },
-  shape: {
-    borderRadius: 20, // More rounded for Minimalist style
-  },
   components: {
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: 24,
+          borderRadius: 16,
           boxShadow: '0 10px 30px rgba(0,0,0,0.05)',
           border: 'none',
           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -102,7 +99,7 @@ export const lightTheme = createTheme({
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 30, // Pill shaped buttons
+          borderRadius: 12,
           textTransform: 'none',
           fontWeight: 700,
           padding: '10px 24px',
@@ -139,7 +136,7 @@ export const glassTheme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: 20,
+          borderRadius: 16,
           background: 'rgba(255, 255, 255, 0.05)',
           backdropFilter: 'blur(10px)',
           border: '1px solid rgba(255, 255, 255, 0.1)',
