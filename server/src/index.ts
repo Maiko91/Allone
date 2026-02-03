@@ -13,6 +13,13 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+// Helper for auto-translation (Placeholder for real API integration)
+const handleAutoTranslate = async (text: string): Promise<string> => {
+    // In a production environment, you would call a Translation API here (e.g., Google Translate, DeepL)
+    // For now, we return the same text with an [EN] prefix or just the text to simulate the structure
+    return `${text} (EN)`;
+};
+
 // Health check
 app.get('/api/health', async (req: Request, res: Response) => {
     try {
@@ -139,8 +146,19 @@ app.post('/api/products', async (req: Request, res: Response) => {
         const {
             title, description, price, rating, reviewCount, imageUrl, amazonUrl,
             category: categoryName, listName,
-            translations // Esperamos { en: { title: '...', description: '...' }, es: { ... } }
+            translations // { en: { ... }, es: { ... } }
         } = req.body;
+
+        let finalTranslations = translations;
+        if (!finalTranslations && title) {
+            // Auto-generate English translation if not provided
+            const enTitle = await handleAutoTranslate(title);
+            const enDesc = description ? await handleAutoTranslate(description) : '';
+            finalTranslations = {
+                es: { title, description },
+                en: { title: enTitle, description: enDesc }
+            };
+        }
 
         if (!title || !price) {
             return res.status(400).json({ error: 'Title and price are required' });
@@ -149,10 +167,19 @@ app.post('/api/products', async (req: Request, res: Response) => {
         const category = await prisma.category.upsert({
             where: { name: categoryName || 'General' },
             update: {},
-            create: { name: categoryName || 'General' }
+            create: {
+                name: categoryName || 'General',
+                translations: {
+                    create: [
+                        { lang: 'es', name: categoryName || 'General' },
+                        { lang: 'en', name: await handleAutoTranslate(categoryName || 'General') }
+                    ]
+                }
+            }
         });
 
-        const translationData = translations ? Object.entries(translations).map(([l, data]: [string, any]) => ({
+        const listNameFinal = listName || 'Top 10';
+        const translationData = finalTranslations ? Object.entries(finalTranslations).map(([l, data]: [string, any]) => ({
             lang: l,
             title: data.title,
             description: data.description
@@ -172,13 +199,19 @@ app.post('/api/products', async (req: Request, res: Response) => {
                     connectOrCreate: {
                         where: {
                             name_categoryId: {
-                                name: listName || 'Top 10',
+                                name: listNameFinal,
                                 categoryId: category.id
                             }
                         },
                         create: {
-                            name: listName || 'Top 10',
-                            categoryId: category.id
+                            name: listNameFinal,
+                            categoryId: category.id,
+                            translations: {
+                                create: [
+                                    { lang: 'es', name: listNameFinal },
+                                    { lang: 'en', name: await handleAutoTranslate(listNameFinal) }
+                                ]
+                            }
                         }
                     }
                 },
@@ -286,7 +319,37 @@ app.delete('/api/products/:id', async (req: Request, res: Response) => {
     }
 });
 
-// --- CATEGORY MANAGEMENT ---
+// POST create category
+app.post('/api/categories', async (req: Request, res: Response) => {
+    try {
+        const { name, translations } = req.body;
+
+        let finalTranslations = translations;
+        if (!finalTranslations) {
+            const enName = await handleAutoTranslate(name);
+            finalTranslations = {
+                es: { name },
+                en: { name: enName }
+            };
+        }
+
+        const category = await prisma.category.create({
+            data: {
+                name,
+                translations: {
+                    create: Object.entries(finalTranslations).map(([l, data]: [string, any]) => ({
+                        lang: l,
+                        name: data.name
+                    }))
+                }
+            },
+            include: { translations: true }
+        });
+        res.status(201).json(category);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to create category' });
+    }
+});
 
 // GET all categories
 app.get('/api/categories', async (req: Request, res: Response) => {
@@ -343,7 +406,38 @@ app.delete('/api/categories/:id', async (req: Request, res: Response) => {
     }
 });
 
-// --- LIST MANAGEMENT ---
+// POST create list
+app.post('/api/lists', async (req: Request, res: Response) => {
+    try {
+        const { name, categoryId, translations } = req.body;
+
+        let finalTranslations = translations;
+        if (!finalTranslations) {
+            const enName = await handleAutoTranslate(name);
+            finalTranslations = {
+                es: { name },
+                en: { name: enName }
+            };
+        }
+
+        const list = await prisma.list.create({
+            data: {
+                name,
+                categoryId,
+                translations: {
+                    create: Object.entries(finalTranslations).map(([l, data]: [string, any]) => ({
+                        lang: l,
+                        name: data.name
+                    }))
+                }
+            },
+            include: { translations: true }
+        });
+        res.status(201).json(list);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to create list' });
+    }
+});
 
 // GET all lists
 app.get('/api/lists', async (req: Request, res: Response) => {

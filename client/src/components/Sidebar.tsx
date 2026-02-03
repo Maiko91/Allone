@@ -43,9 +43,7 @@ export const Sidebar = ({ onSelect, activeCategory, activeList }: SidebarProps) 
         fetchNavigation();
     }, [i18n.language]);
 
-    const changeLanguage = (lng: string) => {
-        i18n.changeLanguage(lng);
-    };
+
 
     const toggleCategory = (category: string) => {
         setOpenCategories(prev => ({
@@ -72,20 +70,6 @@ export const Sidebar = ({ onSelect, activeCategory, activeList }: SidebarProps) 
                 subheader={
                     <ListSubheader sx={{ bgcolor: 'transparent', color: 'primary.main', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', alignItems: 'center', pr: 1 }}>
                         {t('sidebar_title').toUpperCase()}
-                        <Box sx={{ display: 'flex', gap: 0.5 }}>
-                            <ListItemButton
-                                onClick={() => changeLanguage('es')}
-                                sx={{ p: '2px 6px', fontSize: '0.7rem', minWidth: 0, borderRadius: 1, bgcolor: i18n.language === 'es' ? 'primary.main' : 'transparent', color: i18n.language === 'es' ? 'black' : 'white' }}
-                            >
-                                ES
-                            </ListItemButton>
-                            <ListItemButton
-                                onClick={() => changeLanguage('en')}
-                                sx={{ p: '2px 6px', fontSize: '0.7rem', minWidth: 0, borderRadius: 1, bgcolor: i18n.language === 'en' ? 'primary.main' : 'transparent', color: i18n.language === 'en' ? 'black' : 'white' }}
-                            >
-                                EN
-                            </ListItemButton>
-                        </Box>
                     </ListSubheader>
                 }
             >

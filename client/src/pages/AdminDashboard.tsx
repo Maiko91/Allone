@@ -27,7 +27,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 import type { Product } from '../types';
 
 export function AdminDashboard() {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [mainTab, setMainTab] = useState(0); // 0: Products, 1: Categories, 2: Lists
     const [products, setProducts] = useState<Product[]>([]);
     const [categoriesList, setCategoriesList] = useState<any[]>([]);
@@ -37,8 +37,6 @@ export function AdminDashboard() {
     const [formData, setFormData] = useState({
         title: '',
         description: '',
-        en_title: '',
-        en_description: '',
         price: '',
         rating: '',
         reviewCount: '',
@@ -47,8 +45,8 @@ export function AdminDashboard() {
         category: '',
         listName: ''
     });
-    const [categoryFormData, setCategoryFormData] = useState({ name: '', en_name: '' });
-    const [listFormData, setListFormData] = useState({ name: '', en_name: '', categoryId: '' });
+    const [categoryFormData, setCategoryFormData] = useState({ name: '' });
+    const [listFormData, setListFormData] = useState({ name: '', categoryId: '' });
 
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editFormData, setEditFormData] = useState<any>({
@@ -71,9 +69,15 @@ export function AdminDashboard() {
         loadLists();
     }, []);
 
+    // Sincronizar tabValue con el idioma global
+    useEffect(() => {
+        setTabValue(i18n.language === 'en' ? 1 : 0);
+        loadProducts(); // Recargar productos en el nuevo idioma
+    }, [i18n.language]);
+
     const loadProducts = async (category?: string, list?: string) => {
         try {
-            let url = `${API_URL}/products?lang=es`;
+            let url = `${API_URL}/products?lang=${i18n.language}`;
             if (category) url += `&category=${encodeURIComponent(category)}`;
             if (list) url += `&listName=${encodeURIComponent(list)}`;
 
@@ -157,11 +161,6 @@ export function AdminDashboard() {
         e.preventDefault();
 
         try {
-            const translations = {
-                es: { title: formData.title, description: formData.description },
-                en: { title: formData.en_title || formData.title, description: formData.en_description || formData.description }
-            };
-
             const response = await fetch(`${API_URL}/products`, {
                 method: 'POST',
                 headers: {
@@ -171,8 +170,7 @@ export function AdminDashboard() {
                     ...formData,
                     price: parseFloat(formData.price),
                     rating: parseFloat(formData.rating),
-                    reviewCount: parseInt(formData.reviewCount),
-                    translations
+                    reviewCount: parseInt(formData.reviewCount)
                 })
             });
 
@@ -182,8 +180,6 @@ export function AdminDashboard() {
                     ...formData,
                     title: '',
                     description: '',
-                    en_title: '',
-                    en_description: '',
                     price: '',
                     rating: '',
                     reviewCount: '',
@@ -276,18 +272,14 @@ export function AdminDashboard() {
     const handleCreateCategory = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const translations = {
-                es: { name: categoryFormData.name },
-                en: { name: categoryFormData.en_name || categoryFormData.name }
-            };
             const response = await fetch(`${API_URL}/categories`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: categoryFormData.name, translations })
+                body: JSON.stringify({ name: categoryFormData.name })
             });
             if (response.ok) {
                 setMessage({ type: 'success', text: 'Categoría creada' });
-                setCategoryFormData({ name: '', en_name: '' });
+                setCategoryFormData({ name: '' });
                 loadCategories();
                 loadNavigation();
             }
@@ -333,22 +325,17 @@ export function AdminDashboard() {
     const handleCreateList = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const translations = {
-                es: { name: listFormData.name },
-                en: { name: listFormData.en_name || listFormData.name }
-            };
             const response = await fetch(`${API_URL}/lists`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     name: listFormData.name,
-                    categoryId: listFormData.categoryId,
-                    translations
+                    categoryId: listFormData.categoryId
                 })
             });
             if (response.ok) {
                 setMessage({ type: 'success', text: 'Lista creada' });
-                setListFormData({ name: '', en_name: '', categoryId: '' });
+                setListFormData({ name: '', categoryId: '' });
                 loadLists();
                 loadNavigation();
             }
@@ -429,47 +416,21 @@ export function AdminDashboard() {
                         {t('details')}
                     </Typography>
 
-                    <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
-                        <Tabs value={tabValue} onChange={(_, v) => setTabValue(v)}>
-                            <Tab label="Español" />
-                            <Tab label="English" />
-                        </Tabs>
-                    </Box>
-
                     <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        {tabValue === 0 ? (
-                            <>
-                                <TextField
-                                    label={t('title')}
-                                    required
-                                    value={formData.title}
-                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                />
-                                <TextField
-                                    label={t('description')}
-                                    required
-                                    multiline
-                                    rows={3}
-                                    value={formData.description}
-                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                />
-                            </>
-                        ) : (
-                            <>
-                                <TextField
-                                    label={`${t('title')} (EN)`}
-                                    value={formData.en_title}
-                                    onChange={(e) => setFormData({ ...formData, en_title: e.target.value })}
-                                />
-                                <TextField
-                                    label={`${t('description')} (EN)`}
-                                    multiline
-                                    rows={3}
-                                    value={formData.en_description}
-                                    onChange={(e) => setFormData({ ...formData, en_description: e.target.value })}
-                                />
-                            </>
-                        )}
+                        <TextField
+                            label={t('title')}
+                            required
+                            value={formData.title}
+                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                        />
+                        <TextField
+                            label={t('description')}
+                            required
+                            multiline
+                            rows={3}
+                            value={formData.description}
+                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        />
                         <TextField
                             label={t('price')}
                             type="number"
@@ -682,11 +643,6 @@ export function AdminDashboard() {
                             value={categoryFormData.name}
                             onChange={(e) => setCategoryFormData({ ...categoryFormData, name: e.target.value })}
                         />
-                        <TextField
-                            label={t('name_en')}
-                            value={categoryFormData.en_name}
-                            onChange={(e) => setCategoryFormData({ ...categoryFormData, en_name: e.target.value })}
-                        />
                         <Button type="submit" variant="contained" sx={{ color: 'black', fontWeight: 'bold' }}>
                             {t('save')}
                         </Button>
@@ -772,11 +728,6 @@ export function AdminDashboard() {
                             required
                             value={listFormData.name}
                             onChange={(e) => setListFormData({ ...listFormData, name: e.target.value })}
-                        />
-                        <TextField
-                            label={t('name_en')}
-                            value={listFormData.en_name}
-                            onChange={(e) => setListFormData({ ...listFormData, en_name: e.target.value })}
                         />
                         <Autocomplete
                             options={categoriesList}

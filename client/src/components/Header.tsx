@@ -1,13 +1,19 @@
-import { AppBar, Toolbar, Typography, Button, Box, Avatar, Menu, MenuItem } from '@mui/material';
+import { AppBar, Toolbar, Typography, Button, Box, Avatar, Menu, MenuItem, ButtonGroup } from '@mui/material';
 import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../contexts/AuthContext';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export function Header() {
     const { user, login, logout, isAdmin } = useAuth();
+    const { i18n } = useTranslation();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const navigate = useNavigate();
+
+    const changeLanguage = (lng: string) => {
+        i18n.changeLanguage(lng);
+    };
 
     const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
@@ -45,6 +51,35 @@ export function Header() {
                 >
                     Top 10 Products
                 </Typography>
+
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mr: 2 }}>
+                    <ButtonGroup variant="outlined" size="small" sx={{ borderColor: 'rgba(255,255,255,0.1)' }}>
+                        <Button
+                            onClick={() => changeLanguage('es')}
+                            sx={{
+                                px: 1,
+                                bgcolor: i18n.language === 'es' ? 'primary.main' : 'transparent',
+                                color: i18n.language === 'es' ? 'black' : 'white',
+                                borderColor: 'rgba(255,255,255,0.1)',
+                                '&:hover': { bgcolor: i18n.language === 'es' ? 'primary.dark' : 'rgba(255,255,255,0.05)' }
+                            }}
+                        >
+                            ES
+                        </Button>
+                        <Button
+                            onClick={() => changeLanguage('en')}
+                            sx={{
+                                px: 1,
+                                bgcolor: i18n.language === 'en' ? 'primary.main' : 'transparent',
+                                color: i18n.language === 'en' ? 'black' : 'white',
+                                borderColor: 'rgba(255,255,255,0.1)',
+                                '&:hover': { bgcolor: i18n.language === 'en' ? 'primary.dark' : 'rgba(255,255,255,0.05)' }
+                            }}
+                        >
+                            EN
+                        </Button>
+                    </ButtonGroup>
+                </Box>
 
                 {user ? (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
