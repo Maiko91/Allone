@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Typography, TextField, InputAdornment, Button, Container, useTheme } from '@mui/material';
+import { Box, Typography, TextField, InputAdornment, Button, Container } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../contexts/ThemeContext';
@@ -11,7 +11,6 @@ interface HeroProps {
 export const Hero: React.FC<HeroProps> = ({ onSearch }) => {
     const { t } = useTranslation();
     const { themeId } = useAppTheme();
-    const theme = useTheme();
     const [query, setQuery] = useState('');
 
     const handleSubmit = (e: React.FormEvent) => {
