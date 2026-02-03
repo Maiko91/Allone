@@ -32,6 +32,7 @@ app.get('/api/health', async (req: Request, res: Response) => {
 
 // ... imports ...
 import { createProductRouter } from './infrastructure/http/routes/productRoutes';
+import aiRouter from './infrastructure/http/routes/aiRoutes';
 
 // ... app setup ...
 
@@ -44,6 +45,7 @@ import { createProductRouter } from './infrastructure/http/routes/productRoutes'
 
 const productRouter = createProductRouter(prisma);
 app.use('/api/products', productRouter);
+app.use('/api/ai', aiRouter);
 
 // The POST/PUT/DELETE handlers for /api/products are currently defined as app.post('/api/products'...) below.
 // Express will check the router first. If the router doesn't match the method (e.g. POST), it *should* pass through if no route matches.

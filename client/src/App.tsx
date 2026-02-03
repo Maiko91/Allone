@@ -8,6 +8,7 @@ import { Header } from './components/Header';
 import { HomePage } from './pages/HomePage';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { AIAdvisor } from './components/AIAdvisor';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
@@ -31,6 +32,7 @@ function AppContent() {
             }
           />
         </Routes>
+        <AIAdvisor />
       </BrowserRouter>
     </MuiThemeProvider>
   );
