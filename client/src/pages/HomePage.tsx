@@ -1,23 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Container, Grid, Typography, Box } from '@mui/material';
+import { Container, Grid, Typography, Box, Skeleton } from '@mui/material';
 import { Hero } from '../components/Hero';
 import { ProductList } from '../components/ProductList';
 import { Sidebar } from '../components/Sidebar';
-import { searchProducts } from '../services/productService';
-import type { Product } from '../types';
+import { useProducts } from '../hooks/useProducts';
 import { useTranslation } from 'react-i18next';
 
 export function HomePage() {
-    const { t, i18n } = useTranslation();
-    const [products, setProducts] = useState<Product[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { t } = useTranslation();
     const [activeCategory, setActiveCategory] = useState<string | null>(null);
     const [activeList, setActiveList] = useState<string | null>(null);
-    const [searchQuery, setSearchQuery] = useState('');
-
-    useEffect(() => {
-        loadProducts(searchQuery, activeCategory, activeList);
-    }, [activeCategory, activeList, i18n.language]);
+    const { products, loading, loadProducts } = useProducts(activeCategory, activeList);
 
     // SEO: Actualizar Título y Meta Descripción dinámicamente
     useEffect(() => {
@@ -28,12 +21,11 @@ export function HomePage() {
         if (metaDesc) {
             metaDesc.setAttribute('content', t('meta_description', { title }));
         }
-    }, [activeCategory, activeList]);
+    }, [activeCategory, activeList, t]);
 
-    // SEO: Inyectar JSON-LD para resultados enriquecidos de Google
+    // SEO: Inyectar JSON-LD
     useEffect(() => {
         if (!products.length) return;
-
         const scriptId = 'json-ld-products';
         let script = document.getElementById(scriptId) as HTMLScriptElement;
 
@@ -80,22 +72,18 @@ export function HomePage() {
         };
     }, [products, activeCategory, activeList]);
 
-    const loadProducts = async (query: string, category: string | null = null, list: string | null = null) => {
-        setLoading(true);
-        setSearchQuery(query);
-        const results = await searchProducts(query, category, list, i18n.language);
-        setProducts(results);
-        setLoading(false);
-    };
-
     const handleNavigationSelect = (category: string | null, list: string | null) => {
         setActiveCategory(category);
         setActiveList(list);
     };
 
+    const handleSearch = (query: string) => {
+        loadProducts(query, activeCategory, activeList);
+    };
+
     return (
         <>
-            <Hero onSearch={(q) => loadProducts(q, activeCategory, activeList)} />
+            <Hero onSearch={handleSearch} />
             <Container maxWidth="xl" sx={{ py: 6 }}>
                 <Grid container spacing={4}>
                     {/* Sidebar */}
@@ -119,7 +107,20 @@ export function HomePage() {
                                 </Typography>
                             )}
                         </Box>
-                        <ProductList products={products} loading={loading} />
+
+                        {loading ? (
+                            <Grid container spacing={3}>
+                                {[1, 2, 3, 4, 5, 6].map((item) => (
+                                    <Grid key={item} size={{ xs: 12, sm: 6, lg: 4 }}>
+                                        <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 2, mb: 1 }} />
+                                        <Skeleton variant="text" height={30} width="80%" />
+                                        <Skeleton variant="text" height={20} width="60%" />
+                                    </Grid>
+                                ))}
+                            </Grid>
+                        ) : (
+                            <ProductList products={products} loading={loading} />
+                        )}
                     </Grid>
                 </Grid>
             </Container>

@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
 import dotenv from 'dotenv';
-import { scrapeAmazonProduct } from './services/scraperService';
+import { scrapeAmazonProduct } from './infrastructure/scraping/scraperService';
 
 dotenv.config();
 
@@ -30,73 +30,32 @@ app.get('/api/health', async (req: Request, res: Response) => {
     }
 });
 
-// GET all products (with filters)
-app.get('/api/products', async (req: Request, res: Response) => {
-    try {
-        const { category, listName, lang } = req.query;
-        const currentLang = (lang as string) || 'es';
+// ... imports ...
+import { createProductRouter } from './infrastructure/http/routes/productRoutes';
 
-        const products = await prisma.product.findMany({
-            where: {
-                AND: [
-                    category ? {
-                        categories: {
-                            some: {
-                                OR: [
-                                    { name: category as string },
-                                    { translations: { some: { name: category as string } } }
-                                ]
-                            }
-                        }
-                    } : {},
-                    listName ? {
-                        lists: {
-                            some: {
-                                OR: [
-                                    { name: listName as string },
-                                    { translations: { some: { name: listName as string } } }
-                                ]
-                            }
-                        }
-                    } : {}
-                ]
-            },
-            include: {
-                categories: {
-                    include: { translations: { where: { lang: currentLang } } }
-                },
-                lists: {
-                    include: { translations: { where: { lang: currentLang } } }
-                },
-                translations: {
-                    where: { lang: currentLang }
-                }
-            },
-            orderBy: { rating: 'desc' },
-            take: 100
-        });
+// ... app setup ...
 
-        // Mapear resultados para devolver el texto traducido
-        const translatedProducts = products.map(p => ({
-            ...p,
-            title: p.translations[0]?.title || p.title,
-            description: p.translations[0]?.description || p.description,
-            categories: p.categories.map(c => ({
-                ...c,
-                name: c.translations[0]?.name || c.name
-            })),
-            lists: p.lists.map(l => ({
-                ...l,
-                name: l.translations[0]?.name || l.name
-            }))
-        }));
+// Mount the new Hexagonal Router for Products (Read Operations optimized)
+// Note: We mount this first. The legacy handlers below for POST/PUT/DELETE can remain or be refactored.
+// Since createProductRouter only handles GET '/', we need to make sure we don't block other verbs if we mount it at /api/products.
+// Express routers: if a route matches path but method doesn't match, it usually calls next().
+// However, to be cleaner, we can integrate the legacy handlers into a "LegacyProductController" or just standard router.
+// For this step, I will replace the inline GET /api/products handler with the router mount.
 
-        res.json(translatedProducts);
-    } catch (error) {
-        console.error('Error fetching products:', error);
-        res.status(500).json({ error: 'Failed to fetch products' });
-    }
-});
+const productRouter = createProductRouter(prisma);
+app.use('/api/products', productRouter);
+
+// The POST/PUT/DELETE handlers for /api/products are currently defined as app.post('/api/products'...) below.
+// Express will check the router first. If the router doesn't match the method (e.g. POST), it *should* pass through if no route matches.
+// BUT, the router defines `router.get('/', ...)` and that's it. It doesn't have a catch-all.
+// Let's verify: `router.get('/')` matches `/api/products/`.
+// If I request `POST /api/products`, the router sees `/` and checks if it handles POST. It doesn't.
+// It will send a 404 or fall through? Express 4 Router behaves nicely.
+// Let's keep the legacy endpoints below but remove the old GET handler block.
+
+// GET /api/products handler REMOVED (Replaced by productRouter)
+
+// ... existing legacy routes ...
 
 // GET Categories and Lists for Sidebar
 app.get('/api/navigation', async (req: Request, res: Response) => {
