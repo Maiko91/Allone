@@ -59,19 +59,27 @@ export function Header() {
             color: isDark ? 'white' : 'text.primary'
         }}>
             <Toolbar sx={{ justifyContent: 'space-between' }}>
-                <Typography
-                    variant="h6"
+                <Box
                     component="a"
                     href="/"
                     sx={{
+                        display: 'flex',
+                        alignItems: 'center',
                         textDecoration: 'none',
-                        color: themeId === 'dark' ? 'primary.main' : (themeId === 'glass' ? '#00e5ff' : 'text.primary'),
-                        fontWeight: 700,
-                        '&:hover': { opacity: 0.8 }
+                        '&:hover': { opacity: 0.8 },
+                        transition: 'opacity 0.2s'
                     }}
                 >
-                    Top 10 Products
-                </Typography>
+                    <img
+                        src="/assets/logo.png"
+                        alt="allOne"
+                        style={{
+                            height: '40px',
+                            width: 'auto',
+                            display: 'block'
+                        }}
+                    />
+                </Box>
 
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, md: 2 } }}>
                     {/* Language Switcher */}

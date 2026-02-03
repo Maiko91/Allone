@@ -1,0 +1,15 @@
+{
+  "name": "allone",
+  "version": "1.0.0",
+  "description": "Una aplicación full-stack premium para gestionar y mostrar el Top 10 de productos recomendados, con integración de Amazon Scraping y Google Auth.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "husky": "^9.1.7"
+  }
+}
