@@ -74,4 +74,4 @@ ${JSON.stringify(products.map(p => ({
         }
     }
 }
-}
+
