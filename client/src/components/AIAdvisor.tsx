@@ -205,14 +205,17 @@ export function AIAdvisor() {
                             maxRows={3}
                         />
                         <IconButton
-                            color="primary"
                             onClick={handleSend}
                             disabled={!input.trim() || loading}
                             sx={{
-                                bgcolor: isDark ? 'primary.dark' : 'primary.main',
-                                color: 'white',
+                                bgcolor: isDark ? 'primary.main' : '#1a1a1a',
+                                color: isDark ? '#000' : '#fff',
                                 '&:hover': {
-                                    bgcolor: isDark ? 'primary.main' : 'primary.dark'
+                                    bgcolor: isDark ? '#b3e600' : '#333'
+                                },
+                                '&.Mui-disabled': {
+                                    bgcolor: isDark ? 'rgba(0,229,255,0.3)' : 'rgba(0,0,0,0.2)',
+                                    color: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)'
                                 }
                             }}
                         >
