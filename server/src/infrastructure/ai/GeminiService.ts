@@ -11,8 +11,15 @@ export class GeminiService {
         }
 
         const genAI = new GoogleGenerativeAI(apiKey);
+
+        // DEBUG: List available models
+        // Note: The SDK doesn't expose listModels directly on GoogleGenerativeAI instance easily in all versions, 
+        // but let's try to just log that we are initializing.
+        // Actually, we can use a simple fetch to check models if the SDK fails, but let's stick to simple debugging first.
+
+        // In 2026, old models (1.0, 1.5) are deprecated. Using gemini-2.5-flash.
         this.model = genAI.getGenerativeModel({
-            model: 'gemini-1.5-pro',
+            model: 'gemini-2.5-flash',
             safetySettings: [
                 {
                     category: HarmCategory.HARM_CATEGORY_HARASSMENT,
@@ -60,9 +67,11 @@ ${JSON.stringify(products.map(p => ({
             const result = await this.model.generateContent(fullPrompt);
             const response = await result.response;
             return response.text();
+            // Log specific error details if available
         } catch (error) {
             console.error('Gemini API error:', error);
             throw new Error('Failed to get AI response');
         }
     }
+}
 }
