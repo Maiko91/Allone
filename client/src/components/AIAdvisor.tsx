@@ -52,6 +52,7 @@ export function AIAdvisor() {
                     bottom: { xs: 16, md: 24 },
                     right: { xs: 16, md: 24 },
                     zIndex: 9999,
+                    display: open ? 'none' : 'flex',
                     background: isDark
                         ? 'linear-gradient(135deg, #00e5ff 0%, #ccff00 100%)'
                         : 'primary.main',
