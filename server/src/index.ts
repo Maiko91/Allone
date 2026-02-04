@@ -1,12 +1,18 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
-import dotenv from 'dotenv';
-import path from 'path';
+// import dotenv from 'dotenv';
+// import path from 'path';
 import { scrapeAmazonProduct } from './infrastructure/scraping/scraperService';
 
-// Load .env from project root
-dotenv.config({ path: path.join(__dirname, '../.env') });
+// Load .env from project root - DISABLED: using cross-env instead
+// dotenv.config({ path: path.join(__dirname, '../.env') });
+
+// DEBUG: Check environment variables
+console.log('🔍 Environment Variables:');
+console.log('PORT:', process.env.PORT);
+console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'SET (length: ' + process.env.DATABASE_URL.length + ')' : 'NOT SET');
+console.log('GEMINI_API_KEY:', process.env.GEMINI_API_KEY ? 'SET' : 'NOT SET');
 
 const app = express();
 const prisma = new PrismaClient();
