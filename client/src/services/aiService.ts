@@ -13,6 +13,6 @@ interface AskResponse {
 }
 
 export const askProductQuestion = async (request: AskRequest): Promise<string> => {
-    const response = await axios.post<AskResponse>(`${API_URL}/api/ai/ask`, request);
+    const response = await axios.post<AskResponse>(`${API_URL}/ai/ask`, request);
     return response.data.response;
 };
