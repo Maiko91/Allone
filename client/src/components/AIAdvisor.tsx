@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Box, Fab, Dialog, DialogTitle, DialogContent, TextField, IconButton, Typography, Paper, CircularProgress, Alert } from '@mui/material';
+import { useState, useRef, useEffect } from 'react';
+import { Box, Fab, Dialog, DialogTitle, DialogContent, TextField, IconButton, Typography, Paper, CircularProgress, Alert, useTheme, useMediaQuery } from '@mui/material';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import CloseIcon from '@mui/icons-material/Close';
 import SendIcon from '@mui/icons-material/Send';
@@ -15,8 +15,16 @@ export function AIAdvisor() {
     const { messages, loading, error, askQuestion, clearMessages } = useAIAdvisor();
     const { t } = useTranslation();
     const { themeId } = useAppTheme();
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+    const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const isDark = themeId === 'dark' || themeId === 'glass';
+
+    // Auto-scroll to bottom when new messages arrive
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages, loading]);
 
     const handleSend = async () => {
         if (!input.trim() || loading) return;
@@ -41,8 +49,9 @@ export function AIAdvisor() {
                 onClick={() => setOpen(true)}
                 sx={{
                     position: 'fixed',
-                    bottom: 24,
-                    right: 24,
+                    bottom: { xs: 16, md: 24 },
+                    right: { xs: 16, md: 24 },
+                    zIndex: 9999,
                     background: isDark
                         ? 'linear-gradient(135deg, #00e5ff 0%, #ccff00 100%)'
                         : 'primary.main',
@@ -63,13 +72,14 @@ export function AIAdvisor() {
                 onClose={() => setOpen(false)}
                 maxWidth="sm"
                 fullWidth
+                fullScreen={isMobile}
                 PaperProps={{
                     sx: {
-                        height: '600px',
-                        maxHeight: '80vh',
+                        height: isMobile ? '100%' : '600px',
+                        maxHeight: isMobile ? '100%' : '80vh',
                         bgcolor: isDark ? 'rgba(10, 10, 10, 0.95)' : 'background.paper',
                         backdropFilter: 'blur(10px)',
-                        borderRadius: 3
+                        borderRadius: isMobile ? 0 : '16px'
                     }
                 }}
             >
@@ -98,6 +108,7 @@ export function AIAdvisor() {
                     <Box sx={{
                         flex: 1,
                         overflowY: 'auto',
+                        overflowX: 'hidden',
                         p: 2,
                         display: 'flex',
                         flexDirection: 'column',
@@ -120,15 +131,32 @@ export function AIAdvisor() {
                                 key={message.id}
                                 sx={{
                                     p: 2,
-                                    maxWidth: '80%',
+                                    maxWidth: '85%',
                                     alignSelf: message.role === 'user' ? 'flex-end' : 'flex-start',
                                     bgcolor: message.role === 'user'
                                         ? (isDark ? 'primary.dark' : 'primary.light')
                                         : (isDark ? 'rgba(255,255,255,0.05)' : 'grey.100'),
-                                    borderRadius: 2
+                                    borderRadius: '12px',
+                                    wordBreak: 'break-word',
+                                    overflow: 'hidden'
                                 }}
                             >
-                                <Typography variant="body2" component="div">
+                                <Typography
+                                    variant="body2"
+                                    component="div"
+                                    sx={{
+                                        wordBreak: 'break-word',
+                                        overflowWrap: 'break-word',
+                                        '& pre': {
+                                            whiteSpace: 'pre-wrap',
+                                            wordBreak: 'break-word',
+                                            overflow: 'hidden'
+                                        },
+                                        '& code': {
+                                            wordBreak: 'break-all'
+                                        }
+                                    }}
+                                >
                                     {message.role === 'assistant' ? (
                                         <ReactMarkdown>{message.content}</ReactMarkdown>
                                     ) : (
@@ -152,6 +180,9 @@ export function AIAdvisor() {
                                 {error}
                             </Alert>
                         )}
+
+                        {/* Scroll anchor */}
+                        <div ref={messagesEndRef} />
                     </Box>
 
                     {/* Input Area */}
