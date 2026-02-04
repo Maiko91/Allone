@@ -104,7 +104,13 @@ export function AIAdvisor() {
                     </Box>
                 </DialogTitle>
 
-                <DialogContent sx={{ display: 'flex', flexDirection: 'column', p: 0 }}>
+                <DialogContent sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    p: 0,
+                    overflow: 'hidden',
+                    height: '100%'
+                }}>
                     {/* Messages Area */}
                     <Box sx={{
                         flex: 1,
@@ -113,7 +119,8 @@ export function AIAdvisor() {
                         p: 2,
                         display: 'flex',
                         flexDirection: 'column',
-                        gap: 2
+                        gap: 2,
+                        minHeight: 0
                     }}>
                         {messages.length === 0 && (
                             <Box sx={{ textAlign: 'center', mt: 4, opacity: 0.6 }}>
@@ -133,13 +140,13 @@ export function AIAdvisor() {
                                 sx={{
                                     p: 2,
                                     maxWidth: '85%',
+                                    width: 'fit-content',
                                     alignSelf: message.role === 'user' ? 'flex-end' : 'flex-start',
                                     bgcolor: message.role === 'user'
                                         ? (isDark ? 'primary.dark' : 'primary.light')
                                         : (isDark ? 'rgba(255,255,255,0.05)' : 'grey.100'),
                                     borderRadius: '12px',
-                                    wordBreak: 'break-word',
-                                    overflow: 'hidden'
+                                    flexShrink: 0
                                 }}
                             >
                                 <Typography
@@ -148,13 +155,20 @@ export function AIAdvisor() {
                                     sx={{
                                         wordBreak: 'break-word',
                                         overflowWrap: 'break-word',
+                                        '& p': { margin: 0 },
+                                        '& ul, & ol': { paddingLeft: 2, margin: '8px 0' },
                                         '& pre': {
                                             whiteSpace: 'pre-wrap',
                                             wordBreak: 'break-word',
-                                            overflow: 'hidden'
+                                            overflow: 'auto',
+                                            maxWidth: '100%',
+                                            bgcolor: 'rgba(0,0,0,0.1)',
+                                            p: 1,
+                                            borderRadius: 1
                                         },
                                         '& code': {
-                                            wordBreak: 'break-all'
+                                            wordBreak: 'break-all',
+                                            fontSize: '0.85em'
                                         }
                                     }}
                                 >
@@ -168,7 +182,7 @@ export function AIAdvisor() {
                         ))}
 
                         {loading && (
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
                                 <CircularProgress size={20} />
                                 <Typography variant="caption" sx={{ opacity: 0.7 }}>
                                     {t('aiAdvisor.thinking', { defaultValue: 'Thinking...' })}
