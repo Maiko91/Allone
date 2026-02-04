@@ -67,11 +67,35 @@ ${JSON.stringify(products.map(p => ({
             const result = await this.model.generateContent(fullPrompt);
             const response = await result.response;
             return response.text();
-            // Log specific error details if available
-        } catch (error) {
+        } catch (error: any) {
             console.error('Gemini API error:', error);
-            throw new Error('Failed to get AI response');
+
+            // Check for specific error types
+            const errorMessage = error?.message || '';
+            const statusCode = error?.status || error?.statusCode || 0;
+
+            // Rate limiting
+            if (statusCode === 429 || errorMessage.includes('429') || errorMessage.toLowerCase().includes('rate limit') || errorMessage.toLowerCase().includes('quota')) {
+                throw new Error('RATE_LIMIT: Too many requests. Please wait a moment and try again.');
+            }
+
+            // Model not found or deprecated
+            if (statusCode === 404 || errorMessage.includes('404') || errorMessage.toLowerCase().includes('not found')) {
+                throw new Error('MODEL_ERROR: AI model temporarily unavailable. Please try again later.');
+            }
+
+            // Safety block
+            if (errorMessage.toLowerCase().includes('safety') || errorMessage.toLowerCase().includes('blocked')) {
+                throw new Error('SAFETY_BLOCK: Request was blocked for safety reasons. Please rephrase your question.');
+            }
+
+            // Network/timeout errors
+            if (errorMessage.toLowerCase().includes('timeout') || errorMessage.toLowerCase().includes('network') || errorMessage.toLowerCase().includes('econnrefused')) {
+                throw new Error('NETWORK_ERROR: Connection issue. Please check your internet and try again.');
+            }
+
+            // Generic fallback
+            throw new Error('API_ERROR: Failed to get AI response. Please try again in a few seconds.');
         }
     }
 }
-
