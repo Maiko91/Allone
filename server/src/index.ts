@@ -76,9 +76,9 @@ app.get('/api/navigation', async (req: Request, res: Response) => {
 
         const navigation: Record<string, string[]> = {};
 
-        categories.forEach(cat => {
+        categories.forEach((cat: any) => {
             const catName = cat.translations[0]?.name || cat.name;
-            navigation[catName] = cat.lists.map(l => l.translations[0]?.name || l.name);
+            navigation[catName] = cat.lists.map((l: any) => l.translations[0]?.name || l.name);
         });
 
         res.json(navigation);

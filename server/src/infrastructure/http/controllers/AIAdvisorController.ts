@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { AskProductAdvisorUseCase } from '../../application/use-cases/AskProductAdvisorUseCase';
+import { AskProductAdvisorUseCase } from '../../../application/use-cases/AskProductAdvisorUseCase';
 
 export class AIAdvisorController {
     constructor(private askProductAdvisorUseCase: AskProductAdvisorUseCase) { }
