@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "ts-node src/index.ts",
+    "dev": "cross-env PORT=3000 DATABASE_URL=postgresql://neondb_owner:yrICjcKyGVfM@ep-restless-butterfly-a5c9q8zw.us-east-2.aws.neon.tech/neondb?sslmode=require GEMINI_API_KEY=AIzaSyAwvmeEGM0Z1NXNyv9FXHiXoV8ifiyTiFY ts-node src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
     "prisma:generate": "prisma generate",
@@ -24,6 +24,7 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^25.1.0",
+    "cross-env": "^10.1.0",
     "prisma": "^6.3.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"

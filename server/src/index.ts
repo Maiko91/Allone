@@ -2,9 +2,11 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
 import dotenv from 'dotenv';
+import path from 'path';
 import { scrapeAmazonProduct } from './infrastructure/scraping/scraperService';
 
-dotenv.config();
+// Load .env from project root
+dotenv.config({ path: path.join(__dirname, '../.env') });
 
 const app = express();
 const prisma = new PrismaClient();
